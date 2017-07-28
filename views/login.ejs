@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login | 4UM </title>
+    <link rel='stylesheet' href= 'stylesheets/login.css'/>
+</head>
+<body>
+<div id="login">
+    <span>Login into 4UM</span>
+    <form id="loginForm">
+        <input type="email" placeholder="Email Address" required/>
+        <input type="password" placeholder="Password" required/>
+    </form>
+    <button type="submit" form="loginForm" id="loginBtn">Log In</button>
+    <div class="toggle" id="showRegister">Create an Account</div>
+    <div class="toggle" id="showRecover">Recover Account</div>
+</div>
+
+<div id="register">
+    <span>Create an Account</span>
+    <form id="registerForm" method="post" action="/users">
+        <input type="email" name="email"placeholder="Email Address" required/>
+        <input type="text" name="username"placeholder="Username" rquired/>
+        <input type="password" name="password" placeholder="Password" id="password1" required/>
+        <input type="password" placeholder="Confirm Password" oninput="matchPassword(this)" required/>
+    </form>
+    <button type="submit" form="registerForm" id="registerBtn">Sign Up</button>
+    <div class="toggle" id="showLogin">Already have an account? Login</div>
+</div>
+
+<div id="recover">
+    <span>Recover Account</span>
+    <div id="recoverDesc">Enter the email address used to create your account</div>
+    <form id="recoverForm">
+        <input type="email" placeholder="Email Address"/>
+    </form>
+    <button type="submit" form="recoverForm" id="recoverBtn">Send Recovery Email</button>
+    <div class="toggle" id="showLogin2">Already have an account? Login</div>
+</div>
+
+<script src="javascripts/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="javascripts/login.js"></script>
+
+</body>
+</html>
