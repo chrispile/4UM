@@ -20,7 +20,8 @@ function onConnect(err, client, done) {
     }
     else {
         console.log('Connected to postgresql');
-        client.end();
+        client.query("CREATE TABLE IF NOT EXISTS Users(email varchar(64), username varchar(64), password varchar(64))");
+        done();
     }
 }
 

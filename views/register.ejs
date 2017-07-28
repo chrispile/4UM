@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %> | 4UM </title>
+    <link rel='stylesheet' href= 'stylesheets/login.css'/>
+</head>
+<body>
+<div id="register">
+    <span>Create an Account</span>
+    <form id="registerForm" method="post" action="/users">
+        <input type="email" name="email"placeholder="Email Address" required/>
+        <input type="text" name="username"placeholder="Username" rquired/>
+        <input type="password" name="password" placeholder="Password" id="password1" required/>
+        <input type="password" placeholder="Confirm Password" oninput="matchPassword(this)" required/>
+    </form>
+    <% if (email) { %>
+        <div class="fail">The email address is already registered.</div>
+    <% } %>
+    <% if (username) { %>
+        <div class="fail">The username chosen is already taken.</div>
+    <% } %>
+    <button type="submit" form="registerForm" id="registerBtn">Sign Up</button>
+    <a href="/">Already have an account? Login</a>
+</div>
+
+
+<script src="javascripts/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="javascripts/register.js"></script>
+
+</body>
+</html>
