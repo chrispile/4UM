@@ -37,7 +37,7 @@ router.post('/login', function(req, res, next) {
                     if(result.rows.length === 0) {
                         res.render('login', { title: 'Failed login', fail:'true'});
                     } else {
-                        res.render('login', {title: 'Login Success', fail:''})//LOGIN SUCCESSFUL (REDIRECT THEM TO HOMEPAGE LATER)
+                        res.render('login', {title: 'Login Success', fail:''}) //LOGIN SUCCESSFUL (REDIRECT THEM TO HOMEPAGE LATER)
                     }
                 }
             });
