@@ -3,6 +3,7 @@ var router = express.Router();
 var sha1 = require('../public/javascripts/sha1');
 var pgSetup = require('../pgSetup.js');
 var pgClient = pgSetup.getClient();
+var requireLogin = require('../requireLogin.js');
 
 
 router.get('/', function(req, res, next) {
@@ -31,14 +32,20 @@ router.post('/login', function(req, res, next) {
             if(result.rows.length === 0) {
                 res.render('login', { title: 'Failed login', fail:'true'});
             } else {
+                req.session.user = result.rows[0];
                 res.redirect('/home');
             }
         }
     });
 });
 
-router.get('/home', function(req, res, next) {
+router.get('/home', requireLogin, function(req, res, next) {
     res.render('mainfeed', {title: 'Home'});
+});
+
+router.get('/logout', function(req, res) {
+    req.session.reset();
+    res.redirect('/');
 });
 
 module.exports = router;
