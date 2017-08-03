@@ -87,6 +87,16 @@ $(document).ready(function(){
     $('.modalClose').click(closeModalBtn);
 
     $('#name2UM').keypress(noSpaces);
+
+    $('.upvote').on('click', upvote);
+    $('.downvote').on('click', downvote);
+    $('.postInfo').on('click', selectPostInfo);
+
+    $('.modalContent form').on('submit', function() {
+        return false;
+    })
+
+
 });
 
 var loadList = function() {
@@ -101,10 +111,10 @@ var createPostElem = function(post, rank) {
     var li =  $('<li/>').addClass('post');
     var postNum = $('<div/>').addClass('postNum').html(rank);
     var scoreDiv = $('<div/>').addClass('scoreDiv');
-    var upvote =  $('<i/>').addClass("fa fa-arrow-up fa-lg").attr('aria-hidden', 'true');
+    var upvote =  $('<i/>').addClass("fa fa-arrow-up fa-lg upvote").attr('aria-hidden', 'true');
     var scoreStr = createScoreString(post.score);
-    var score = $('<div/>').addClass('score').html(scoreStr);
-    var downvote =  $('<i/>').addClass("fa fa-arrow-down fa-lg").attr('aria-hidden', 'true');
+    var score = $('<div/>').addClass('score').html(scoreStr).attr('data-score', post.score);;
+    var downvote =  $('<i/>').addClass("fa fa-arrow-down fa-lg downvote").attr('aria-hidden', 'true');
 
     scoreDiv.append(upvote).append(score).append(downvote);
     var postInfo = $('<div/>').addClass('postInfo');
@@ -164,4 +174,53 @@ var closeModalBtn = function(event) {
 
 var noSpaces = function(event) {
     if(event.which == 32) return false;
+}
+
+var upvote = function(event) {
+    var score = $(this).next();
+    var newScore = parseInt($(score).attr('data-score'));
+    if($(this).css('color') == 'rgb(0, 0, 0)') {
+        $(this).css('color', '#40798C');
+        $(score).css('color', '#40798C');
+        var downvote = $(this).next().next();
+        if($(downvote).css('color') == 'rgb(0, 0, 0)') { //increment score once
+            newScore++;
+        } else { //increment score twice
+            $(downvote).css('color', '#000');
+            newScore += 2;
+        }
+    } else {  //DECREMENT THE SCORE
+        $(score).css('color', '#000');
+        $(this).css('color', '#000');
+        newScore--;
+    }
+    $(score).attr('data-score', newScore);
+    $(score).html(createScoreString(newScore));
+}
+
+var downvote = function(event) {
+    var score = $(this).prev();
+    var newScore = parseInt($(score).attr('data-score'));
+    if($(this).css('color') == 'rgb(0, 0, 0)') {
+        $(this).css('color', '#A83434');
+        $(score).css('color', '#A83434');
+        var upvote = $(this).prev().prev();
+        if($(upvote).css('color') == 'rgb(0, 0, 0)') { //decrement score once
+            newScore--;
+        } else { //decrement score twice
+            $(upvote).css('color', '#000');
+            newScore -= 2;
+        }
+    } else {  //INCCREMENT THE SCORE
+        $(score).css('color', '#000');
+        $(this).css('color', '#000');
+        newScore++;
+    }
+    $(score).attr('data-score', newScore);
+    $(score).html(createScoreString(newScore));
+}
+
+var selectPostInfo = function(event) {
+    $('.postInfo').css('background-color', 'transparent');
+    $(this).css('background-color', '#d3d3d3');
 }
