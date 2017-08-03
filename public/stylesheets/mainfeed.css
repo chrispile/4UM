@@ -1,0 +1,235 @@
+#feed {
+    padding-top: 10px;
+    position: relative;
+    width: 100%;
+    min-height: 100%;
+    padding-right: 310px;
+    box-sizing: border-box;
+    padding-left: 15px;
+}
+
+#sideMenu {
+    position: fixed;
+    right: 0px;
+    width: 300px;
+    height: 100%;
+    background-color: #F6F7F9;
+    box-sizing: border-box;
+    z-index: 100;
+    padding-top: 15px;
+}
+
+#sideMenu label {
+    display: block;
+    font-size: 22px;
+    border: none;
+    border-radius: 2px;
+    margin: 10px auto;
+    width: 280px;
+    padding: 7px;
+    font-weight: bold;
+    color: #59A7C1;
+    background-color: #6A6E72;
+    text-align: center;
+}
+
+#sideMenu label:hover {
+    color: #4D91A8;
+    background-color: #5C5E63;
+}
+
+.postList {
+    padding: 0;
+    list-style: none;
+}
+
+.post {
+    display: block;
+    min-height: 80px;
+    width: 100%;
+    float: left;
+    vertical-align: middle;
+    margin-bottom: 16px;
+}
+
+.postNum {
+    margin-top: 28px;
+    display: inline-block;
+    text-align: center;
+    font-size: 32px;
+    float: left;
+    width: 4%;
+}
+
+.scoreDiv {
+    margin: 6px;
+    display: inline-block;
+    float: left;
+    width: 6%;
+}
+
+.scoreDiv i {
+    margin: auto;
+    display: block;
+    text-align: center;
+}
+
+.scoreDiv i:hover {
+    cursor: pointer;
+}
+
+.score {
+    margin: 4px 0;
+    font-size: 26px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.postInfo {
+    display: inline-block;
+    float: left;
+    width: 86%;
+    overflow: hidden;
+    margin-left: 8px;
+}
+
+.title {
+    margin: 4px 0;
+    font-size: 26px;
+    overflow: hidden;
+}
+
+.postButtons {
+    list-style: none;
+    padding: 0;
+    margin-top: 4px;
+
+}
+
+.postButtons li {
+    margin-right: 14px;
+    display: inline;
+    font-weight: bold;
+}
+
+.postButtons li:hover {
+    text-decoration: underline;
+}
+
+.author, .forum {
+    color: #40798C;
+}
+
+.author:hover, .forum:hover {
+    color: #0B2027;
+    text-decoration: underline;
+}
+
+h3 {
+    margin: 5px 0;
+    text-align: center;
+}
+
+.modal {
+    opacity: 0;
+    visibility: hidden;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    text-align: left;
+    background: rgba(0,0,0, .9);
+    transition: opacity .25s ease;
+}
+
+.modalBg {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    cursor: pointer;
+}
+
+.modalState {
+    display: none;
+}
+
+.modalState:checked + .modal {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modalState:checked + .modal .modalContent {
+  top: 0;
+}
+
+.modalContent {
+    transition: top .25s ease;
+    position: absolute;
+    top: -20%;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 50%;
+    margin: auto;
+    overflow: auto;
+    background: #fff;
+    border-radius: 5px;
+    padding: 1em 2em;
+    height: 50%;
+}
+
+h2 {
+    margin: 0;
+}
+
+form {
+    margin-top: 8px;
+}
+
+form input[type=text], textarea{
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-top: 6px;
+    margin-bottom: 16px;
+    resize: vertical;
+    font-family: Helvetica;
+}
+
+.charNum {
+    display: inline;
+    font-size: 18px;
+    float: right;
+}
+
+label i {
+    font-style: normal;
+}
+
+form input[type=submit] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer
+}
+
+form input[type=submit]:hover {
+    background-color: #45A049;
+}
+
+.modalClose {
+    color: #aaa;
+    float: right;
+}
+
+.modalClose:hover {
+    color: #ccc;
+}

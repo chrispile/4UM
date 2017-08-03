@@ -5,25 +5,11 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
-var pg = require('pg');
-var conString = 'postgres://postgres:pgpass@localhost:5432/4UM'
-
+var pgSetup = require('./pgSetup.js');
 var index = require('./routes/index');
 var users = require('./routes/users');
 
-pg.connect(conString, onConnect);
-
-function onConnect(err, client, done) {
-    if(err) {
-        console.error(err);
-        process.exit(1);
-    }
-    else {
-        console.log('Connected to postgresql');
-        client.query("CREATE TABLE IF NOT EXISTS Users(email varchar(64), username varchar(64), password varchar(64))");
-        done();
-    }
-}
+pgSetup.connect();
 
 var app = express();
 

@@ -5,7 +5,7 @@ var listPosts = [
         authorid: '',
         forum: 'todayilearned',
         comments: ['one', 'two'],
-        score: 435234,
+        score: 43524,
         postdate: new Date("August 1, 2017 12:14:00")
     },
     {
@@ -78,9 +78,18 @@ var mainList;
 $(document).ready(function(){
     mainList = $('.postList');
     loadList();
+
+    $('#title1').keyup({max: 300, currentID: '#current1', maxID: '#max1'}, textareaCounter);
+    $('#title2').keyup({max: 300, currentID: '#current2', maxID: '#max2'}, textareaCounter);
+    $('#text').keyup({max: 40000, currentID: '#current3', maxID: '#max3'}, textareaCounter);
+
+    $('.modalBg').click(closeModal);
+    $('.modalClose').click(closeModalBtn);
+
+    $('#name2UM').keypress(noSpaces);
 });
 
-var loadList = function() { //REPLACE WITH EJS LATER
+var loadList = function() {
     mainList.html('');
     for(var postIndex = 0; postIndex < listPosts.length; postIndex++) {
         var postLi = createPostElem(listPosts[postIndex], postIndex + 1);
@@ -92,10 +101,11 @@ var createPostElem = function(post, rank) {
     var li =  $('<li/>').addClass('post');
     var postNum = $('<div/>').addClass('postNum').html(rank);
     var scoreDiv = $('<div/>').addClass('scoreDiv');
-    var upvote = $('<img />', {width: 22, height: 22, src: "C:\\Users\\hello\\Documents\\4UM\\public\\images\\upvote-black.png"}).addClass('upvote');
+    var upvote =  $('<i/>').addClass("fa fa-arrow-up fa-lg").attr('aria-hidden', 'true');
     var scoreStr = createScoreString(post.score);
     var score = $('<div/>').addClass('score').html(scoreStr);
-    var downvote = $('<img />', {width: 22, height: 22, src: "C:\\Users\\hello\\Documents\\4UM\\public\\images\\downvote-black.png"}).addClass('downvote');
+    var downvote =  $('<i/>').addClass("fa fa-arrow-down fa-lg").attr('aria-hidden', 'true');
+
     scoreDiv.append(upvote).append(score).append(downvote);
     var postInfo = $('<div/>').addClass('postInfo');
     var title = $('<div/>').addClass('title').html(post.title);
@@ -128,6 +138,30 @@ var createScoreString = function(score) {
     return score.toString();
 }
 
-var changeScore = function() {
+var textareaCounter = function(event) {
+    var len = $(this).val().length;
+    if(len >= event.data.max) {
+        $(event.data.currentID).css('color', '#A83434');
+        $(event.data.maxID).css('color', '#A83434');
+    } else {
+        $(event.data.currentID).css('color', '#000');
+        $(event.data.maxID).css('color', '#000');
+    }
+    $(event.data.currentID).text(len);
+}
 
+var closeModal = function(event) {
+    $('form input[type=text]').val('');
+    $('form textarea').val('');
+    $('.current').html(0);
+    $('form input[type=radio]').prop('checked', false);
+}
+
+var closeModalBtn = function(event) {
+    $('.modalState').prop('checked', false);
+    closeModal();
+}
+
+var noSpaces = function(event) {
+    if(event.which == 32) return false;
 }

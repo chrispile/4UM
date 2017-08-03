@@ -1,0 +1,146 @@
+<%- include('header', {title: title, style: 'stylesheets/mainfeed.css'}); %>
+
+<div class="container">
+    <div id="sideMenu">
+        <h3>Welcome to 4UM</h3>
+        <label id="createLinkPost" for="modal1">Submit a new link</label>
+        <label id="createTextPost" for="modal2">Submit a new text post</label>
+        <label id="createForum" for="modal3">Create your own 2UM</label>
+    </div>
+    <div id="feed">
+        <ol class="postList">
+            <!-- <li class="post">
+                <div class="postNum">1</div>
+                <div class="scoreDiv">
+                    <img class="upvote" src="C:\Users\hello\Documents\4UM\public\images\upvote-black.png" height="22" width="22">
+                     <div class="score">300K</div>
+                     <img class="downvote" src="C:\Users\hello\Documents\4UM\public\images\downvote-black.png" height="22" width="22">
+                </div>
+                <div class="postInfo">
+                    <div class="title">[S7E3] Post-Premiere Discussion - S7E3 'The Queen's Justice'</div>
+                    <div class="tagline">submitted 1 day ago by <a href="">AutoModerator</a> to <a href="">2UM/GameOfthrones</a></div>
+                    <ul class="postButtons">
+                        <li class="comments">947 comments</li>
+                        <li class="share">share</li>
+                        <li class="save">save</li>
+                        <li class="report">report</li>
+                    </ul>
+                </div>
+            </li> -->
+        </ol>
+    </div>
+
+</div>
+
+<input class="modalState" id="modal1" type="checkbox"/>
+<div class="modal">
+    <label class="modalBg" for="modal1"></label>
+    <div class="modalContent">
+        <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
+        <h2>Submit link to 4UM</h2>
+        <form>
+            <label for="url">url</label></br>
+            <input type="text" id="url" name="postUrl"></br>
+
+            <label for="title">title</label>
+            <div class="charNum">
+                <span class="current" id="current1">0</span>
+                <span class="max" id="max1">/ 300</span>
+            </div>
+            <textarea type="text" id="title1" name="postTitle" maxlength="300"></textarea></br>
+
+            <label for="2UM">choose a 2UM</label></br>
+            <input type="text" id="2UM" name="post2UM" list="2UMlist"/>
+            <datalist id="2UMlist">
+                <option>GameOfThrones</option>
+                <option>Gaming</option>
+                <option>WorldNews</option>
+                <option>GameOfThrones</option>
+                <option>Movies</option>
+                <option>todayilearned</option>
+                <option>pics</option>
+                <option>mildyinteresting</option>
+                <option>technology</option>
+            </datalist>
+
+            <input type="submit" value="submit">
+        </form>
+    </div>
+</div>
+
+<input class="modalState" id="modal2" type="checkbox"/>
+<div class="modal">
+    <label class="modalBg" for="modal2"></label>
+    <div class="modalContent">
+        <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
+        <h2>Submit a text post to 4UM</h2>
+        <form>
+            <label for="title2">title</label>
+            <div class="charNum">
+                <span class="current" id="current2">0</span>
+                <span class="max" id="max2">/ 300</span>
+            </div>
+            <textarea type="text" id="title2" name="postTitle" maxlength="300"></textarea></br>
+
+            <label for="text">text (optional)</label>
+            <div class="charNum">
+                <span class="current" id="current3">0</span>
+                <span class="max" id="max3">/ 40000</span>
+            </div>
+
+            <textarea type="text" id="text" name="postText" maxlength="40000"></textarea></br>
+
+            <label for="2UM">choose a 2UM</label></br>
+            <input type="text" id="2UM" name="post2UM" list="2UMlist"/>
+            <datalist id="2UMlist">
+                <option>GameOfThrones</option>
+                <option>Gaming</option>
+                <option>WorldNews</option>
+                <option>GameOfThrones</option>
+                <option>Movies</option>
+                <option>todayilearned</option>
+                <option>pics</option>
+                <option>mildyinteresting</option>
+                <option>technology</option>
+            </datalist>
+            <input type="submit" value="submit">
+        </form>
+    </div>
+</div>
+
+<input class="modalState" id="modal3" type="checkbox"/>
+<div class="modal">
+    <label class="modalBg" for="modal3"></label>
+    <div class="modalContent">
+        <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
+        <h2>Create your own 2UM</h2>
+        <form>
+            <label for="name2UM">name</label>
+            <input type="text" id="name2UM" name="name" maxlength="100" required/>
+
+            <label for="title2UM">title</label>
+            <input type="text" id="title2UM" name="title" maxlength="100" required/>
+
+            <label for="desc2UM">description</label>
+            <textarea type="text" id="desc2UM" name="desc" maxlength="500"></textarea>
+
+            <label>Type</label><br>
+            <label>
+                <input type="radio" name="type" value="public">
+                <i>public</i>
+            </label><br>
+            <label>
+                <input type="radio" name="type" value="protected">
+                <i>protected</i>
+            </label><br>
+            <label>
+                <input type="radio" name="type" value="private">
+                <i>private</i>
+            </label><br><br>
+
+            <input type="submit" value="submit">
+        </form>
+    </div>
+</div>
+
+<%- include('footer', {script: "javascripts/mainfeed.js"}); %>
