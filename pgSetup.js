@@ -7,7 +7,7 @@ var pgSetup = new function() {
         pgClient.connect();
         console.log('Connected to postgres');
         //setup all tables if not already created
-        pgClient.query("CREATE TABLE IF NOT EXISTS Users(email varchar(64) PRIMARY KEY, username varchar(64) UNIQUE, password varchar(64))");
+        pgClient.query("CREATE TABLE IF NOT EXISTS Users(uid serial PRIMARY KEY, email varchar(64) UNIQUE, username varchar(64) UNIQUE, password varchar(64))");
     }
     this.getClient = function() {
         return pgClient;

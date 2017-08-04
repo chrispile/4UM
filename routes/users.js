@@ -23,17 +23,18 @@ router.post('/', function(req, res, next) {
     }
     pgClient.query(queryConfig, function(err, result) {
         if(err) {
-            console.log(err);
             if(err.constraint == 'users_username_key') {
                 res.render('register', {title: 'Username taken', email:'', username:'true'}); //USERNAME IS TAKEN
             }
-            else if(err.constraint == 'users_pkey') {
+            else if(err.constraint == 'users_email_key') {
                 res.render('register', {title: 'Email taken', email:'true', username:''}); //EMAIL IS TAKEN
+            } else {
+                console.log(err);
             }
         }
         else {
             //SUCCESSFUL REGISETER, REDIRECT TO DASHBOARD (IMPLEMENT LATER);
-            res.render('register', { title: 'Success register', email:'', username:''});
+            res.render('login', { title: 'Login (Success Register)', fail: ''});
         }
     });
 });

@@ -43,6 +43,10 @@ router.get('/home', requireLogin, function(req, res, next) {
     res.render('mainfeed', {title: 'Home'});
 });
 
+router.get('/SUB4UM', requireLogin, function(req, res, next) {
+    res.render('forumlist', {title: 'SUB4UM List'});
+});
+
 router.get('/logout', function(req, res) {
     req.session.reset();
     res.redirect('/');
