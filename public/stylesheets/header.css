@@ -111,3 +111,108 @@ header {
     background-color: #458296;
     cursor: pointer;
 }
+
+.modal {
+    opacity: 0;
+    visibility: hidden;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    text-align: left;
+    background: rgba(0,0,0, .9);
+    transition: opacity .25s ease;
+}
+
+.modalBg {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    cursor: pointer;
+}
+
+.modalState {
+    display: none;
+}
+
+.modalState:checked + .modal {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modalState:checked + .modal .modalContent {
+  top: 0;
+}
+
+.modalContent {
+    transition: top .25s ease;
+    position: absolute;
+    top: -20%;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 50%;
+    margin: auto;
+    overflow: auto;
+    background: #fff;
+    border-radius: 5px;
+    padding: 1em 2em;
+    height: 50%;
+}
+
+.modalContent2 {
+    height: 25%;
+}
+
+
+h2 {
+    margin: 0;
+    margin-bottom: 10px;
+}
+
+form {
+    margin-top: 8px;
+}
+
+form input[type=text], textarea{
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-top: 6px;
+    margin-bottom: 16px;
+    resize: vertical;
+    font-family: Helvetica;
+}
+
+.modalClose {
+    color: #aaa;
+    float: right;
+}
+
+.modalClose:hover {
+    color: #ccc;
+    cursor: pointer;
+}
+
+label i {
+    font-style: normal;
+}
+
+form input[type=submit] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer
+}
+
+form input[type=submit]:hover {
+    background-color: #45A049;
+}

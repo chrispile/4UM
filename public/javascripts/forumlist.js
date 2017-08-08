@@ -44,6 +44,10 @@ $(document).ready(function() {
     protectedList = $('#protectedList');
     subscribedList = $('#subscribedList');
 
+    $('.modalBg').click(closeModal);
+    $('.modalClose').click(closeModal);
+
+
     loadLists();
 });
 
@@ -70,4 +74,11 @@ var createLi = function(name, type) {
     var label = $('<button/>').addClass(type).html(type);
     li.append(label);
     return li;
+}
+
+var closeModal = function(event) {
+    $('form input[type=text]').val('');
+    $('form textarea').val('');
+    $('.current').html(0);
+    $('form input[type=radio]').prop('checked', false);
 }

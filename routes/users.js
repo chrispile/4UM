@@ -33,8 +33,18 @@ router.post('/', function(req, res, next) {
             }
         }
         else {
-            //SUCCESSFUL REGISETER, REDIRECT TO DASHBOARD (IMPLEMENT LATER);
+            //SUCCESSFUL REGISETER
             res.render('login', { title: 'Login (Success Register)', fail: ''});
+        }
+    });
+});
+
+router.get('/:uid', function(req, res, next) {
+    pgClient.query('SELECT * FROM USERS WHERE uid = $1', [req.params.uid], function(err, result) {
+        if(err) {
+            console.log(err);
+        } else {
+            res.json(result.rows[0]);
         }
     });
 });

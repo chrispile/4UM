@@ -1,8 +1,8 @@
 <%- include('header', {title: title, style: 'stylesheets/forumlist.css'}); %>
 
         <h3>SUB4UMs</h3>
-        <label id="createForum" for="modal3">Create your own</label>
-        <label id="createForum" for="modal3">Join a private SUB4UM</label>
+        <label id="createForum" for="modal1">Create your own</label>
+        <label id="createForum" for="modal2">Join a private SUB4UM</label>
     </div>
     <div id="container4UMs">
         <div id="public4UMs">
@@ -25,12 +25,14 @@
 
 
 
-<!--
-<input class="modalState" id="modal3" type="checkbox"/>
+
+<input class="modalState" id="modal1" type="checkbox"/>
 <div class="modal">
-    <label class="modalBg" for="modal3"></label>
+    <label class="modalBg" for="modal1"></label>
     <div class="modalContent">
-        <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
+        <label for="modal1">
+            <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
+        </label>
         <h2>Create your own SUB4UM</h2>
         <form id="SUB4UMForm">
             <label for="name2UM">name</label>
@@ -59,7 +61,23 @@
             <input type="submit" value="submit">
         </form>
     </div>
-</div> -->
+</div>
 
+<input class="modalState" id="modal2" type="checkbox"/>
+<div class="modal">
+    <label class="modalBg" for="modal2"></label>
+    <div class="modalContent modalContent2">
+        <label for="modal2">
+            <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
+        </label>
+        <h2>Join a private SUB4UM</h2>
+        <form id="SUB4UMForm">
+            <label for="name2UM">Access Code</label>
+            <input type="text" id="name2UM" name="name" maxlength="100" required/>
+
+            <input type="submit" value="submit">
+        </form>
+    </div>
+</div>
 
 <%- include('footer', {script: "javascripts/forumlist.js"}); %>

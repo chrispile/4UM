@@ -7,35 +7,17 @@
         <label id="createForum" for="modal3">Create your own 2UM</label>
     </div>
     <div id="feed">
-        <ol class="postList">
-            <!-- <li class="post">
-                <div class="postNum">1</div>
-                <div class="scoreDiv">
-                    <img class="upvote" src="C:\Users\hello\Documents\4UM\public\images\upvote-black.png" height="22" width="22">
-                     <div class="score">300K</div>
-                     <img class="downvote" src="C:\Users\hello\Documents\4UM\public\images\downvote-black.png" height="22" width="22">
-                </div>
-                <div class="postInfo">
-                    <div class="title">[S7E3] Post-Premiere Discussion - S7E3 'The Queen's Justice'</div>
-                    <div class="tagline">submitted 1 day ago by <a href="">AutoModerator</a> to <a href="">2UM/GameOfthrones</a></div>
-                    <ul class="postButtons">
-                        <li class="comments">947 comments</li>
-                        <li class="share">share</li>
-                        <li class="save">save</li>
-                        <li class="report">report</li>
-                    </ul>
-                </div>
-            </li> -->
-        </ol>
+        <ol class="postList"></ol>
     </div>
-
 </div>
 
 <input class="modalState" id="modal1" type="checkbox"/>
 <div class="modal">
     <label class="modalBg" for="modal1"></label>
     <div class="modalContent">
-        <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
+        <label for="modal1">
+            <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
+        </label>
         <h2>Submit link to 4UM</h2>
         <form id="postLinkForm">
             <label for="url">url</label></br>
@@ -46,11 +28,11 @@
                 <span class="current" id="current1">0</span>
                 <span class="max" id="max1">/ 300</span>
             </div>
-            <textarea type="text" id="title1" name="postTitle" maxlength="300" required></textarea></br>
+            <textarea type="text" id="title" name="postTitle" maxlength="300" required></textarea></br>
 
-            <label for="2UM">choose a 2UM</label></br>
-            <input type="text" id="2UM" name="post2UM" list="2UMlist" required/>
-            <datalist id="2UMlist">
+            <label for="sname">choose a SUB4UM</label></br>
+            <input type="text" id="sname" name="sname" list="SUB4UMlist" required/>
+            <datalist id="SUB4UMlist">
                 <option>GameOfThrones</option>
                 <option>Gaming</option>
                 <option>WorldNews</option>
@@ -62,7 +44,7 @@
                 <option>technology</option>
             </datalist>
 
-            <input type="submit" value="submit">
+            <input type="submit" value="submit" id="modal1submit">
         </form>
     </div>
 </div>
@@ -71,7 +53,9 @@
 <div class="modal">
     <label class="modalBg" for="modal2"></label>
     <div class="modalContent">
-        <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
+        <label for="modal2">
+            <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
+        </label>
         <h2>Submit a text post to 4UM</h2>
         <form id="postTextForm">
             <label for="title2">title</label>
@@ -79,7 +63,7 @@
                 <span class="current" id="current2">0</span>
                 <span class="max" id="max2">/ 300</span>
             </div>
-            <textarea type="text" id="title2" name="postTitle" maxlength="300" required></textarea></br>
+            <textarea type="text" id="title" name="postTitle" maxlength="300" required></textarea></br>
 
             <label for="text">text (optional)</label>
             <div class="charNum">
@@ -89,9 +73,9 @@
 
             <textarea type="text" id="text" name="postText" maxlength="40000"></textarea></br>
 
-            <label for="2UM">choose a 2UM</label></br>
-            <input type="text" id="2UM" name="post2UM" list="2UMlist" required/>
-            <datalist id="2UMlist">
+            <label for="sname">choose a SUB4UM</label></br>
+            <input type="text" id="sname" name="sname" list="SUB4UMlist" required/>
+            <datalist id="SUB4UMlist">
                 <option>GameOfThrones</option>
                 <option>Gaming</option>
                 <option>WorldNews</option>
@@ -102,7 +86,8 @@
                 <option>mildyinteresting</option>
                 <option>technology</option>
             </datalist>
-            <input type="submit" value="submit">
+
+            <input type="submit" value="submit" id="modal2submit">
         </form>
     </div>
 </div>
@@ -111,17 +96,19 @@
 <div class="modal">
     <label class="modalBg" for="modal3"></label>
     <div class="modalContent">
-        <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
+        <label for="modal3">
+            <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
+        </label>
         <h2>Create your own SUB4UM</h2>
         <form id="SUB4UMForm">
             <label for="name2UM">name</label>
-            <input type="text" id="name2UM" name="name" maxlength="100" required/>
+            <input type="text" id="sname" name="name" maxlength="100" required/>
 
             <label for="title2UM">title</label>
-            <input type="text" id="title2UM" name="title" maxlength="100" required/>
+            <input type="text" id="title" name="title" maxlength="100" required/>
 
             <label for="desc2UM">description</label>
-            <textarea type="text" id="desc2UM" name="desc" maxlength="500" required></textarea>
+            <textarea type="text" id="desc" name="desc" maxlength="500" required></textarea>
 
             <label>Type</label><br>
             <label>
@@ -137,7 +124,7 @@
                 <i>private</i>
             </label><br><br>
 
-            <input type="submit" value="submit">
+            <input type="submit" value="submit" id="modal3submit">
         </form>
     </div>
 </div>

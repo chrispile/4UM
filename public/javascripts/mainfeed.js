@@ -1,103 +1,42 @@
-var listPosts = [
-    {
-        title: 'TIL about the Rosenhan experiment, in which a Stanford psychologist and his associates faked hallucinations in order to be admitted to psychiatric hospitals. They then acted normally. All were forced to admit to having a mental illness and agree to take antipsychotic drugs in order to be released. ',
-        author: 'circuitloss',
-        authorid: '',
-        forum: 'todayilearned',
-        comments: ['one', 'two'],
-        score: 43524,
-        postdate: new Date("August 1, 2017 12:14:00")
-    },
-    {
-        title: "[S7E3] Post-Premiere Discussion - S7E3 'The Queen's Justice'",
-        author: 'AutoModerator',
-        authorid: '',
-        forum: 'GameOfThrones',
-        comments: ['okay', 'o', 'a','f'],
-        score: 5345,
-        postdate: new Date("August 1, 2017 12:14:00")
-    },
-    {
-        title: 'Developer Update | The Games Are Back! | Overwatch',
-        author: 'corylulu',
-        authorid: '',
-        forum: 'Overwatch',
-        comments: [],
-        score: 52334,
-        postdate: new Date("August 1, 2017 12:14:00")
-    },
-    {
-        title: 'For the first time in Gaming history, a proud moment for all of us, a Survival game has left early access.',
-        author: 'CheekyHusky',
-        authorid: '',
-        forum: 'gaming',
-        comments: [],
-        score: 345,
-        postdate: new Date("August 1, 2017 12:14:00")
-    },
-    {
-        title: 'Lawsuit claims Fox News and the White House collaborated on fake news story to deflect Russian election meddling',
-        author: 'philcfm19',
-        authorid: '',
-        forum: 'worldnews',
-        comments: [],
-        score: 10,
-        postdate: new Date("August 1, 2017 12:14:00")
-    },
-    {
-        title: 'Lawsuit claims Fox News and the White House collaborated on fake news story to deflect Russian election meddling',
-        author: 'philcfm19',
-        authorid: '',
-        forum: 'worldnews',
-        comments: [],
-        score: 10,
-        postdate: new Date("August 1, 2017 12:14:00")
-    },
-    {
-        title: 'Lawsuit claims Fox News and the White House collaborated on fake news story to deflect Russian election meddling',
-        author: 'philcfm19',
-        authorid: '',
-        forum: 'worldnews',
-        comments: [],
-        score: 10,
-        postdate: new Date("August 1, 2017 12:14:00")
-    },
-    {
-        title: 'Lawsuit claims Fox News and the White House collaborated on fake news story to deflect Russian election meddling',
-        author: 'philcfm19',
-        authorid: '',
-        forum: 'worldnews',
-        comments: [],
-        score: 10,
-        postdate: new Date("August 1, 2017 12:14:00")
-    },
-]
-
+var listPosts;
 var mainList;
 
 $(document).ready(function(){
     mainList = $('.postList');
-    loadList();
+    getPosts();
 
     $('#title1').keyup({max: 300, currentID: '#current1', maxID: '#max1'}, textareaCounter);
     $('#title2').keyup({max: 300, currentID: '#current2', maxID: '#max2'}, textareaCounter);
     $('#text').keyup({max: 40000, currentID: '#current3', maxID: '#max3'}, textareaCounter);
 
     $('.modalBg').click(closeModal);
-    $('.modalClose').click(closeModalBtn);
+    $('.modalClose').click(closeModal);
 
     $('#name2UM').keypress(noSpaces);
 
-    $('.upvote').on('click', upvote);
-    $('.downvote').on('click', downvote);
-    $('.postInfo').on('click', selectPostInfo);
+    $(mainList).on('click', '.upvote', upvote);
+    $(mainList).on('click', '.downvote', downvote);
+    $(mainList).on('click', '.postInfo', selectPostInfo);
 
     $('.modalContent form').on('submit', function() {
         return false;
     })
 
-
+    $('#modal1submit').on('click', postPost);
+    $('#modal2submit').on('click', postPost);
+    $('#modal3submit').on('click', postSUB4UM);
 });
+
+var getPosts = function() {
+    $.ajax( {
+        url: "http://localhost:3000/posts",
+        type: "GET",
+        dataType: "json"
+    }).done(function(json) {
+        listPosts = json;
+        loadList();
+    });
+}
 
 var loadList = function() {
     mainList.html('');
@@ -108,7 +47,7 @@ var loadList = function() {
 }
 
 var createPostElem = function(post, rank) {
-    var li =  $('<li/>').addClass('post');
+    var li =  $('<li/>').addClass('post').attr('data-pid', post.pid);
     var postNum = $('<div/>').addClass('postNum').html(rank);
     var scoreDiv = $('<div/>').addClass('scoreDiv');
     var upvote =  $('<i/>').addClass("fa fa-arrow-up fa-lg upvote").attr('aria-hidden', 'true');
@@ -119,18 +58,19 @@ var createPostElem = function(post, rank) {
     scoreDiv.append(upvote).append(score).append(downvote);
     var postInfo = $('<div/>').addClass('postInfo');
     var title = $('<div/>').addClass('title').html(post.title);
-    var tagline = $('<div/>').addClass('tagline').html('submitted on ' + post.postdate + ' by ')
+    var timestamp = new Date(post.timestamp.replace(' ', 'T'));
+    var tagline = $('<div/>').addClass('tagline').html('submitted on ' + timestamp + ' by ')
     var author = $('<a />', {
-        href: post.authorid,
-        text: post.author,
+        href: post.username, //fix later
+        text: post.username,
     }).addClass('author');
     var forum = $('<a />', {
-        href: post.forum,
-        text: post.forum
+        href: post.sname, //fix later
+        text: post.sname
     }).addClass('forum');
     tagline.append(author).append(' to ').append(forum);
     var postButtons = $('<ul/>').addClass('postButtons');
-    var comments = $('<li/>').addClass('comments').html(post.comments.length + ' comments');
+    var comments = $('<li/>').addClass('comments').html(0 + ' comments'); //fix later
     var share = $('<li/>').addClass('share').html('share');
     var save = $('<li/>').addClass('save').html('save');
     var report = $('<li/>').addClass('report').html('report');
@@ -167,60 +107,113 @@ var closeModal = function(event) {
     $('form input[type=radio]').prop('checked', false);
 }
 
-var closeModalBtn = function(event) {
-    $('.modalState').prop('checked', false);
-    closeModal();
-}
-
 var noSpaces = function(event) {
     if(event.which == 32) return false;
 }
 
 var upvote = function(event) {
     var score = $(this).next();
-    var newScore = parseInt($(score).attr('data-score'));
+    var value;
     if($(this).css('color') == 'rgb(0, 0, 0)') {
         $(this).css('color', '#40798C');
         $(score).css('color', '#40798C');
         var downvote = $(this).next().next();
         if($(downvote).css('color') == 'rgb(0, 0, 0)') { //increment score once
-            newScore++;
+            value = 1;
         } else { //increment score twice
             $(downvote).css('color', '#000');
-            newScore += 2;
+            value = 2;
         }
     } else {  //DECREMENT THE SCORE
         $(score).css('color', '#000');
         $(this).css('color', '#000');
-        newScore--;
+        value = -1;
     }
-    $(score).attr('data-score', newScore);
-    $(score).html(createScoreString(newScore));
+    var scoreDiv = $(this).parent();
+    var post = $(scoreDiv).parent();
+    var pid = $(post).attr('data-pid');
+    vote(pid, value, score);
 }
 
 var downvote = function(event) {
     var score = $(this).prev();
-    var newScore = parseInt($(score).attr('data-score'));
+    var value;
     if($(this).css('color') == 'rgb(0, 0, 0)') {
         $(this).css('color', '#A83434');
         $(score).css('color', '#A83434');
         var upvote = $(this).prev().prev();
         if($(upvote).css('color') == 'rgb(0, 0, 0)') { //decrement score once
-            newScore--;
+            value = -1;
         } else { //decrement score twice
             $(upvote).css('color', '#000');
-            newScore -= 2;
+            value = -2;
         }
     } else {  //INCCREMENT THE SCORE
         $(score).css('color', '#000');
         $(this).css('color', '#000');
-        newScore++;
+        value = 1
     }
-    $(score).attr('data-score', newScore);
-    $(score).html(createScoreString(newScore));
+    var scoreDiv = $(this).parent();
+    var post = $(scoreDiv).parent();
+    var pid = $(post).attr('data-pid');
+    vote(pid, value, score);
+}
+
+var vote = function(pid, value, scoreElem) {
+    $.ajax({
+        url: "http://localhost:3000/posts/voted/" + pid,
+        type: "POST",
+        data: {value: value}
+    }).done(function(json) {
+        var newScore = json.score;
+        $(scoreElem).attr('data-score', newScore);
+        $(scoreElem).html(createScoreString(newScore));
+    })
 }
 
 var selectPostInfo = function(event) {
     $('.postInfo').css('background-color', 'transparent');
     $(this).css('background-color', '#d3d3d3');
+}
+
+var postPost = function(event) {
+    var form = $(this).parent();
+    var sname = $(form).find('#sname').val();
+    var postData = {
+        title: $(form).find('#title').val()
+    }
+    if($(form).attr('id') == 'postLinkForm') {
+        postData.url = $(form).find('#url').val();
+    }
+    else if($(form).attr('id') == 'postTextForm') {
+        postData.text = $(form).find('#text').val();
+    }
+    $.ajax({
+        url: "http://localhost:3000/posts/" + sname,
+        type: "POST",
+        data: postData
+    }).done(function(json) {
+        listPosts.push(json);
+        var li = createPostElem(listPosts[listPosts.length - 1], listPosts.length);
+        mainList.append(li);
+    });
+}
+
+var postSUB4UM = function(event) {
+    var form = $(this).parent();
+    var sname = $(form).find('#sname').val();
+    var title = $(form).find('#title').val();
+    var description = $(form).find('#desc').val();
+    var type = $(form).find("[name='type']").val();
+    var postData = {
+        sname: sname, title: title, description: description, type: type
+    }
+    $.ajax({
+        url: "http://localhost:3000/sub4ums",
+        type: "POST",
+        data: postData
+    }).done(function(json) {
+        console.log(json);
+        console.log('added new sub4um!');
+    });
 }
