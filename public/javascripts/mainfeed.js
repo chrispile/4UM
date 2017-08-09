@@ -1,6 +1,6 @@
 var listPosts;
 var mainList;
-
+var voted;
 $(document).ready(function(){
     mainList = $('.postList');
     getPosts();
@@ -27,6 +27,33 @@ $(document).ready(function(){
     $('#modal3submit').on('click', postSUB4UM);
 });
 
+var getVoted = function() {
+    $.ajax( {
+        url: "http://localhost:3000/posts/voted/",
+        type: "GET",
+        dataType: "json"
+    }).done(function(json) {
+        voted = json;
+        changeVoted();
+    });
+}
+
+var changeVoted = function() {
+    $.each(voted, function(index, obj){
+        var pid = obj.pid;
+        var type = obj.type;
+        var post = $('.postList').find('[data-pid="' + pid + '"]');
+        if(type == 'upvote') {
+            $(post).find('.upvote').css('color','#40798C');
+            $(post).find('.score').css('color','#40798C');
+        } else {
+            $(post).find('.downvote').css('color','#A83434');
+            $(post).find('.score').css('color','#A83434');
+        }
+    })
+}
+
+
 var getPosts = function() {
     $.ajax( {
         url: "http://localhost:3000/posts",
@@ -44,6 +71,7 @@ var loadList = function() {
         var postLi = createPostElem(listPosts[postIndex], postIndex + 1);
         mainList.append(postLi);
     }
+    getVoted();
 }
 
 var createPostElem = function(post, rank) {
@@ -114,6 +142,7 @@ var noSpaces = function(event) {
 var upvote = function(event) {
     var score = $(this).next();
     var value;
+    var type;
     if($(this).css('color') == 'rgb(0, 0, 0)') {
         $(this).css('color', '#40798C');
         $(score).css('color', '#40798C');
@@ -124,20 +153,23 @@ var upvote = function(event) {
             $(downvote).css('color', '#000');
             value = 2;
         }
+        type="upvote"
     } else {  //DECREMENT THE SCORE
         $(score).css('color', '#000');
         $(this).css('color', '#000');
         value = -1;
+        type="none"
     }
     var scoreDiv = $(this).parent();
     var post = $(scoreDiv).parent();
     var pid = $(post).attr('data-pid');
-    vote(pid, value, score);
+    vote(pid, value, type, score);
 }
 
 var downvote = function(event) {
     var score = $(this).prev();
     var value;
+    var type;
     if($(this).css('color') == 'rgb(0, 0, 0)') {
         $(this).css('color', '#A83434');
         $(score).css('color', '#A83434');
@@ -148,22 +180,24 @@ var downvote = function(event) {
             $(upvote).css('color', '#000');
             value = -2;
         }
+        type="downvote"
     } else {  //INCCREMENT THE SCORE
         $(score).css('color', '#000');
         $(this).css('color', '#000');
         value = 1
+        type="none"
     }
     var scoreDiv = $(this).parent();
     var post = $(scoreDiv).parent();
     var pid = $(post).attr('data-pid');
-    vote(pid, value, score);
+    vote(pid, value, type, score);
 }
 
-var vote = function(pid, value, scoreElem) {
+var vote = function(pid, value, type, scoreElem) {
     $.ajax({
         url: "http://localhost:3000/posts/voted/" + pid,
         type: "POST",
-        data: {value: value}
+        data: {value: value, type: type}
     }).done(function(json) {
         var newScore = json.score;
         $(scoreElem).attr('data-score', newScore);

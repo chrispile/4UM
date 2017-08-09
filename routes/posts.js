@@ -3,8 +3,9 @@ var router = express.Router();
 var pgSetup = require('../pgSetup.js');
 var pgClient = pgSetup.getClient();
 
-router.get('/', function(req, res, next) {
-    pgClient.query("SELECT * FROM posts", [], function(err, result) {
+
+router.get('/voted', function(req, res, next) {
+    pgClient.query("SELECT * FROM voted", function(err, result) {
         if(err) {
             console.log(err);
         } else {
@@ -12,6 +13,7 @@ router.get('/', function(req, res, next) {
         }
     })
 });
+
 
 router.get('/:sname', function(req, res, next) {
     pgClient.query("SELECT * FROM posts WHERE sname=$1", [req.params.sname], function(err, result) {
@@ -37,25 +39,46 @@ router.post('/:sname', function(req, res, next) {
     });
 });
 
-router.post('/voted/:pid', function(req, res, next) {
-    //add or update voted table
-    // var queryConfig = {
-    //     text: "UPDATE voted SET "
-    // }
 
-    //update score in posts tables
-    var queryConfig = {
-        text: "UPDATE posts SET SCORE = SCORE + $1 WHERE pid=$2 RETURNING SCORE",
-        values: [req.body.value, req.params.pid]
+
+router.post('/voted/:pid', function(req, res, next) {
+    var queryConfig = {};
+    if(req.body.type == "none") {
+        queryConfig.text = "DELETE FROM voted WHERE uid=$1 AND pid=$2";
+        queryConfig.values = [res.locals.user.uid, req.params.pid];
+    } else {
+        queryConfig.text = "INSERT INTO voted(uid, pid, type) VALUES ($1, $2, $3) ON CONFLICT(uid, pid) DO UPDATE SET type=EXCLUDED.type";
+        queryConfig.values = [res.locals.user.uid, req.params.pid, req.body.type];
     }
+    //insert or update voted table
     pgClient.query(queryConfig, function(err, result) {
         if(err) {
             console.log(err);
         } else {
-            res.json(result.rows[0])
+            queryConfig.text = "UPDATE posts SET SCORE = SCORE + $1 WHERE pid=$2 RETURNING SCORE";
+            queryConfig.values = [req.body.value, req.params.pid];
+            //update score in posts tables
+            pgClient.query(queryConfig, function(err, result) {
+                if(err) {
+                    console.log(err);
+                } else {
+                    res.json(result.rows[0])
+                }
+            })
+        }
+    });
+})
+
+
+router.get('/', function(req, res, next) {
+    pgClient.query("SELECT * FROM posts", [], function(err, result) {
+        if(err) {
+            console.log(err);
+        } else {
+            res.json(result.rows);
         }
     })
-})
+});
 
 
 module.exports = router;
