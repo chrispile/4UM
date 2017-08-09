@@ -1,10 +1,8 @@
 <%- include('header', {title: title, style: 'stylesheets/mainfeed.css'}); %>
 
-
         <h3>Welcome to 4UM</h3>
         <label id="createLinkPost" for="modal1">Submit a new link</label>
         <label id="createTextPost" for="modal2">Submit a new text post</label>
-        <label id="createForum" for="modal3">Create your own 2UM</label>
     </div>
     <div id="feed">
         <ol class="postList"></ol>
@@ -32,17 +30,7 @@
 
             <label for="sname">choose a SUB4UM</label></br>
             <input type="text" id="sname" name="sname" list="SUB4UMlist" required/>
-            <datalist id="SUB4UMlist">
-                <option>GameOfThrones</option>
-                <option>Gaming</option>
-                <option>WorldNews</option>
-                <option>GameOfThrones</option>
-                <option>Movies</option>
-                <option>todayilearned</option>
-                <option>pics</option>
-                <option>mildyinteresting</option>
-                <option>technology</option>
-            </datalist>
+            <datalist id="SUB4UMlist" class="SUB4UMlist"></datalist>
 
             <input type="submit" value="submit" id="modal1submit">
         </form>
@@ -75,58 +63,12 @@
 
             <label for="sname">choose a SUB4UM</label></br>
             <input type="text" id="sname" name="sname" list="SUB4UMlist" required/>
-            <datalist id="SUB4UMlist">
-                <option>GameOfThrones</option>
-                <option>Gaming</option>
-                <option>WorldNews</option>
-                <option>GameOfThrones</option>
-                <option>Movies</option>
-                <option>todayilearned</option>
-                <option>pics</option>
-                <option>mildyinteresting</option>
-                <option>technology</option>
-            </datalist>
+            <datalist id="SUB4UMlist" class="SUB4UMlist"></datalist>
 
             <input type="submit" value="submit" id="modal2submit">
         </form>
     </div>
 </div>
 
-<input class="modalState" id="modal3" type="checkbox"/>
-<div class="modal">
-    <label class="modalBg" for="modal3"></label>
-    <div class="modalContent">
-        <label for="modal3">
-            <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
-        </label>
-        <h2>Create your own SUB4UM</h2>
-        <form id="SUB4UMForm">
-            <label for="name2UM">name</label>
-            <input type="text" id="sname" name="name" maxlength="100" required/>
-
-            <label for="title2UM">title</label>
-            <input type="text" id="title" name="title" maxlength="100" required/>
-
-            <label for="desc2UM">description</label>
-            <textarea type="text" id="desc" name="desc" maxlength="500" required></textarea>
-
-            <label>Type</label><br>
-            <label>
-                <input type="radio" name="type" value="public">
-                <i>public</i>
-            </label><br>
-            <label>
-                <input type="radio" name="type" value="protected">
-                <i>protected</i>
-            </label><br>
-            <label>
-                <input type="radio" name="type" value="private" required>
-                <i>private</i>
-            </label><br><br>
-
-            <input type="submit" value="submit" id="modal3submit">
-        </form>
-    </div>
-</div>
 
 <%- include('footer', {script: "javascripts/mainfeed.js"}); %>

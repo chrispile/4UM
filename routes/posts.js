@@ -5,7 +5,7 @@ var pgClient = pgSetup.getClient();
 
 
 router.get('/voted', function(req, res, next) {
-    pgClient.query("SELECT * FROM voted", function(err, result) {
+    pgClient.query("SELECT * FROM voted WHERE uid=$1", [res.locals.user.uid], function(err, result) {
         if(err) {
             console.log(err);
         } else {

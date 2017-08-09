@@ -1,9 +1,26 @@
-var listPosts;
+/*
+NEED TO TO
+- Posts need to direct user to new page
+- Post buttons are non-functioning rn (comments, share, save, report)
+- Usernames and SUB4UMs on posts need to direct to new pages
+- Fix datetime to display 'submitted X mins/hours/days ago' instead of the raw datetime
+- Currently shows ALL posts from ALL SUB4UMs
+    - Need to display posts from only SUB4UMs that the user is subscribed to
+- Change SUB4UM datalist to strictly a drop downvote
+    - Prevent user from entering a SUB4UM that does not exist
+*/
+
+
+var listPosts = [];
 var mainList;
 var voted;
+var sub4ums;
+var subscribed;
+
 $(document).ready(function(){
     mainList = $('.postList');
-    getPosts();
+    getSubscribed();
+    getSUB4UMS();
 
     $('#title1').keyup({max: 300, currentID: '#current1', maxID: '#max1'}, textareaCounter);
     $('#title2').keyup({max: 300, currentID: '#current2', maxID: '#max2'}, textareaCounter);
@@ -24,8 +41,49 @@ $(document).ready(function(){
 
     $('#modal1submit').on('click', postPost);
     $('#modal2submit').on('click', postPost);
-    $('#modal3submit').on('click', postSUB4UM);
 });
+
+var getSubscribed = function() {
+    $.ajax( {
+        url: "http://localhost:3000/sub4ums/subscribe",
+        type: "GET",
+        dataType: "json"
+    }).done(function(json) {
+        subscribed = json;
+        getPosts();
+    });
+}
+
+var getPosts = function() {
+    var promises = [];
+    $.each(subscribed, function(index, forum) {
+        var sname = forum.sname;
+        console.log(sname);
+        var request = $.ajax({
+            url: "http://localhost:3000/posts/" + sname,
+            type: "GET",
+            dataType: "json"
+        }).done(function(json) {
+            listPosts = listPosts.concat(json);
+        });
+        promises.push(request);
+    })
+    $.when.apply(null, promises).done(function() {
+        loadList();
+    })
+}
+
+
+var loadList = function() {
+    console.log(listPosts);
+    mainList.html('');
+    for(var postIndex = 0; postIndex < listPosts.length; postIndex++) {
+        var postLi = createPostElem(listPosts[postIndex], postIndex + 1);
+        mainList.append(postLi);
+    }
+    getVoted();
+}
+
 
 var getVoted = function() {
     $.ajax( {
@@ -51,27 +109,6 @@ var changeVoted = function() {
             $(post).find('.score').css('color','#A83434');
         }
     })
-}
-
-
-var getPosts = function() {
-    $.ajax( {
-        url: "http://localhost:3000/posts",
-        type: "GET",
-        dataType: "json"
-    }).done(function(json) {
-        listPosts = json;
-        loadList();
-    });
-}
-
-var loadList = function() {
-    mainList.html('');
-    for(var postIndex = 0; postIndex < listPosts.length; postIndex++) {
-        var postLi = createPostElem(listPosts[postIndex], postIndex + 1);
-        mainList.append(postLi);
-    }
-    getVoted();
 }
 
 var createPostElem = function(post, rank) {
@@ -126,13 +163,6 @@ var textareaCounter = function(event) {
         $(event.data.maxID).css('color', '#000');
     }
     $(event.data.currentID).text(len);
-}
-
-var closeModal = function(event) {
-    $('form input[type=text]').val('');
-    $('form textarea').val('');
-    $('.current').html(0);
-    $('form input[type=radio]').prop('checked', false);
 }
 
 var noSpaces = function(event) {
@@ -230,24 +260,33 @@ var postPost = function(event) {
         listPosts.push(json);
         var li = createPostElem(listPosts[listPosts.length - 1], listPosts.length);
         mainList.append(li);
+        closeModal();
+        $('.modalState').prop('checked', false);
     });
 }
 
-var postSUB4UM = function(event) {
-    var form = $(this).parent();
-    var sname = $(form).find('#sname').val();
-    var title = $(form).find('#title').val();
-    var description = $(form).find('#desc').val();
-    var type = $(form).find("[name='type']").val();
-    var postData = {
-        sname: sname, title: title, description: description, type: type
-    }
-    $.ajax({
-        url: "http://localhost:3000/sub4ums",
-        type: "POST",
-        data: postData
+var getSUB4UMS = function() {
+    $.ajax( {
+        url: "http://localhost:3000/sub4ums/options",
+        type: "GET",
+        dataType: "json"
     }).done(function(json) {
-        console.log(json);
-        console.log('added new sub4um!');
+        sub4ums = json;
+        addOptions();
     });
+}
+
+var addOptions = function() {
+    $.each(sub4ums, function(index, obj) {
+        var sname = obj.sname;
+        var option = $('<option/>').html(sname);
+        $('.SUB4UMlist').append(option);
+    })
+}
+
+var closeModal = function(event) {
+    $('form input[type=text]').val('');
+    $('form textarea').val('');
+    $('.current').html(0);
+    $('form input[type=radio]').prop('checked', false);
 }
