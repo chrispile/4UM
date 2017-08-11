@@ -3,7 +3,6 @@ var router = express.Router();
 var pgSetup = require('../pgSetup.js');
 var pgClient = pgSetup.getClient();
 
-
 router.get('/voted', function(req, res, next) {
     pgClient.query("SELECT * FROM voted WHERE uid=$1", [res.locals.user.uid], function(err, result) {
         if(err) {
@@ -14,9 +13,18 @@ router.get('/voted', function(req, res, next) {
     })
 });
 
-
 router.get('/:sname', function(req, res, next) {
     pgClient.query("SELECT * FROM posts WHERE sname=$1", [req.params.sname], function(err, result) {
+        if(err) {
+            console.log(err);
+        } else {
+            res.json(result.rows);
+        }
+    })
+});
+
+router.get('/', function(req, res, next) {
+    pgClient.query("SELECT * FROM posts", [], function(err, result) {
         if(err) {
             console.log(err);
         } else {
@@ -38,8 +46,6 @@ router.post('/:sname', function(req, res, next) {
         }
     });
 });
-
-
 
 router.post('/voted/:pid', function(req, res, next) {
     var queryConfig = {};
@@ -68,17 +74,5 @@ router.post('/voted/:pid', function(req, res, next) {
         }
     });
 })
-
-
-router.get('/', function(req, res, next) {
-    pgClient.query("SELECT * FROM posts", [], function(err, result) {
-        if(err) {
-            console.log(err);
-        } else {
-            res.json(result.rows);
-        }
-    })
-});
-
 
 module.exports = router;

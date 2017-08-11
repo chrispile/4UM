@@ -5,15 +5,25 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
-var session = require('client-sessions');
 var pgSetup = require('./pgSetup.js');
+var environment = process.env.NODE_ENV
+if(environment == 'test') {
+    var conString = 'postgres://postgres:pgpass@localhost:5432/4UMTest';
+    console.log('Preparing to test!');
+} else {
+    var conString = 'postgres://postgres:pgpass@localhost:5432/4UM';
+}
+pgSetup.setup(conString)
+pgSetup.connect();
+var pgClient = pgSetup.getClient();
+
+var session = require('client-sessions');
 var index = require('./routes/index');
 var users = require('./routes/users');
 var sub4ums = require('./routes/sub4ums');
 var posts = require('./routes/posts')
 
-pgSetup.connect();
-var pgClient = pgSetup.getClient();
+
 
 var app = express();
 

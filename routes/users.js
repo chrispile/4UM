@@ -3,6 +3,22 @@ var router = express.Router();
 var sha1 = require('../public/javascripts/sha1');
 var pgSetup = require('../pgSetup.js');
 var pgClient = pgSetup.getClient();
+var errorCodes = require('../errorCodes');
+var HttpStatus = require('http-status-codes')
+
+router.get('/:uid', function(req, res, next) {
+    pgClient.query('SELECT * FROM USERS WHERE uid = $1', [req.params.uid], function(err, result) {
+        if(err) {
+            console.log(err);
+        } else {
+            if(result.rows.length == 0) {
+                res.status(HttpStatus.NOT_FOUND).json({error: errorCodes.UserNotFound});
+            } else {
+                res.json(result.rows[0]);
+            }
+        }
+    });
+});
 
 router.get('/', function(req, res, next) {
     pgClient.query("SELECT * FROM Users", [], function(err, result) {
@@ -10,7 +26,7 @@ router.get('/', function(req, res, next) {
             console.log(err);
         }
         else {
-            res.json(result.rows);
+            res.json(result.rows).end();
         }
     })
 });
@@ -33,21 +49,13 @@ router.post('/', function(req, res, next) {
             }
         }
         else {
-            //SUCCESSFUL REGISETER
+            //SUCCESSFUL REGISTER
+            console.log('hi');
             res.render('login', { title: 'Login (Success Register)', fail: ''});
         }
     });
 });
 
-router.get('/:uid', function(req, res, next) {
-    pgClient.query('SELECT * FROM USERS WHERE uid = $1', [req.params.uid], function(err, result) {
-        if(err) {
-            console.log(err);
-        } else {
-            res.json(result.rows[0]);
-        }
-    });
-});
 
 
 module.exports = router;
