@@ -23,6 +23,7 @@ var pgSetup = new function() {
         pgClient.query("CREATE TABLE IF NOT EXISTS Comments(cid serial, uid integer, pid integer, text varchar(1000), PRIMARY KEY(cid, uid, pid))");
         pgClient.query("CREATE TABLE IF NOT EXISTS Admins(uid integer, sid integer, PRIMARY KEY(uid, sid))");
         pgClient.query("CREATE TABLE IF NOT EXISTS Moderators(uid integer, sid integer, PRIMARY KEY(uid, sid))");
+        pgClient.query("CREATE TABLE IF NOT EXISTS Resets(email varchar(64) PRIMARY KEY, token varchar(64))");
     }
     this.getClient = function() {
         return pgClient;

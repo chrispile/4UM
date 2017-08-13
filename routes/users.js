@@ -26,7 +26,7 @@ router.get('/', function(req, res, next) {
             console.log(err);
         }
         else {
-            res.json(result.rows).end();
+            res.json(result.rows);
         }
     })
 });
@@ -50,12 +50,20 @@ router.post('/', function(req, res, next) {
         }
         else {
             //SUCCESSFUL REGISTER
-            console.log('hi');
             res.render('login', { title: 'Login (Success Register)', fail: ''});
         }
     });
 });
 
-
+router.patch('/', function(req, res, next) {
+    var encryptPass = sha1.hash(req.body.password);
+    pgClient.query("UPDATE USERS SET password=$1 WHERE email=$2", [encryptPass, req.body.email], function(err, result) {
+        if(err) {
+            console.log(err);
+        } else {
+            res.send(HttpStatus.OK);
+        }
+    })
+})
 
 module.exports = router;

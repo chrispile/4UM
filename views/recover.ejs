@@ -9,16 +9,18 @@
 <div id="recover">
     <span>Recover Account</span>
     <div id="recoverDesc">Enter the email address used to create your account</div>
-    <form id="recoverForm">
-        <input type="email" placeholder="Email Address"/>
+    <form id="recoverForm" method="post" action="/reset">
+        <input type="email" name ="email" placeholder="Email Address"/>
     </form>
+    <% if (fail) { %>
+        <div class="fail">The email address you entered is incorrect</div>
+    <% } %>
     <button type="submit" form="recoverForm" id="recoverBtn">Send Recovery Email</button>
     <a href="/">Already have an account? Login</a>
 </div>
 
-<!--
+
 <script src="javascripts/jquery-3.2.1.min.js"></script>
-<script type="text/javascript" src="javascripts/register.js"></script> -->
 
 </body>
 </html>

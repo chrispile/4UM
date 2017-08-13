@@ -15,7 +15,7 @@ router.get('/register', function(req, res, next) {
 })
 
 router.get('/recover', function(req, res, next) {
-    res.render('recover', {title: 'Recover'});
+    res.render('recover', {title: 'Recover', fail: ''});
 })
 
 router.post('/login', function(req, res, next) {

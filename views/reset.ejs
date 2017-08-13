@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title> <%= title %> | 4UM </title>
+    <link rel='stylesheet' href= '/stylesheets/login.css'/>
+</head>
+<body>
+<% if (exists) { %>
+<div id="recover">
+    <span>Reset your password</span>
+    <form id="resetForm">
+        <input type="password" name="password" placeholder="New Password" id="password1" required/>
+        <input type="password" placeholder="Confirm Password" oninput="matchPassword(this)" id="password2" required/>
+    </form>
+    <button type="submit" form="resetForm" id="resetBtn">Reset</button>
+</div>
+<div id="success">
+    <span>Reset successful!</span>
+    <div id="loginLink"><a href="/">Login here!</a></div>
+<div>
+<% } else { %>
+    <div id="recover">
+        <span>Sorry, reset link does not exist</span>
+    </div>
+<% } %>
+
+<script src="/javascripts/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="/javascripts/register.js"></script>
+
+</body>
+</html>

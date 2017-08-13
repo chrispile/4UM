@@ -22,6 +22,7 @@ var index = require('./routes/index');
 var users = require('./routes/users');
 var sub4ums = require('./routes/sub4ums');
 var posts = require('./routes/posts')
+var reset = require('./routes/reset')
 
 
 
@@ -75,6 +76,8 @@ app.use('/', index);
 app.use('/users', users);
 app.use('/sub4ums', sub4ums);
 app.use('/posts', posts);
+app.use('/reset', reset);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
