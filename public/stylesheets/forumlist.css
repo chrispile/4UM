@@ -73,3 +73,7 @@ li {
 ul {
     list-style-type: none;
 }
+
+a:hover {
+    color: #356473;
+}

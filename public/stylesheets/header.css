@@ -93,6 +93,7 @@ header {
     padding-top: 15px;
 }
 
+
 #sideMenu label {
     display: block;
     font-size: 22px;
@@ -106,6 +107,7 @@ header {
     background-color: #59A7C1;
     text-align: center;
 }
+
 
 #sideMenu label:hover {
     background-color: #458296;
@@ -178,7 +180,7 @@ form {
     margin-top: 8px;
 }
 
-form input[type=text], textarea{
+form input[type=text], textarea, #removeModSelect, #addModSelect{
     width: 100%;
     padding: 12px;
     border: 1px solid #ccc;
@@ -211,8 +213,51 @@ form input[type=submit] {
     border: none;
     border-radius: 4px;
     cursor: pointer
+    display: block;
 }
 
 form input[type=submit]:hover {
     background-color: #45A049;
+}
+
+select {
+    display: block;
+    margin: 6px 0 16px 0;
+    padding: 8px 24px;
+    border-radius: 4px;
+}
+
+select option {
+    border-radius: 4px;
+}
+
+select option:hover {
+    background-color: #458296;
+}
+
+
+#deleteSub4um {
+    position: relative;
+    bottom: 0;
+    margin-top: 10px 0;
+    float: right;
+    background-color: #F0523D;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: block;
+}
+
+#changeType input[type=submit] {
+    margin: 10px 0;
+}
+
+#removeModBtn {
+    background-color: #F0523D;
+}
+
+#removeModBtn:hover, #deleteSub4um:hover {
+    background-color: #993527;
 }

@@ -2,25 +2,35 @@
 NEED TO TO
 - Posts need to direct user to new page
 - Post buttons are non-functioning rn (comments, share, save, report)
-- Usernames and SUB4UMs on posts need to direct to new pages
-- Fix datetime to display 'submitted X mins/hours/days ago' instead of the raw datetime
-- Currently shows ALL posts from ALL SUB4UMs
-    - Need to display posts from only SUB4UMs that the user is subscribed to
-- Change SUB4UM datalist to strictly a drop downvote
-    - Prevent user from entering a SUB4UM that does not exist
+- Usernames on posts need to direct to new pages
 */
-
 
 var listPosts = [];
 var mainList;
 var voted;
 var sub4ums;
 var subscribed;
+var urlsname;
+var sorted;
+var subscribers;
+var mods;
+var forumsid;
 
 $(document).ready(function(){
+    urlsname = (window.location.href).split('/').pop();
+
     mainList = $('.postList');
-    getSubscribed();
-    getSUB4UMS();
+    if(urlsname =='home') {
+        getSubscribed();
+        getSUB4UMS();
+    } else {
+        getsid()
+        getForum();
+        $('#deleteSub4um').on('click', deleteSub4um);
+        $('#addModBtn').on('click', addMod);
+        $('#removeModBtn').on('click', removeMod);
+
+    }
 
     $('#title1').keyup({max: 300, currentID: '#current1', maxID: '#max1'}, textareaCounter);
     $('#title2').keyup({max: 300, currentID: '#current2', maxID: '#max2'}, textareaCounter);
@@ -28,8 +38,6 @@ $(document).ready(function(){
 
     $('.modalBg').click(closeModal);
     $('.modalClose').click(closeModal);
-
-    $('#name2UM').keypress(noSpaces);
 
     $(mainList).on('click', '.upvote', upvote);
     $(mainList).on('click', '.downvote', downvote);
@@ -41,7 +49,23 @@ $(document).ready(function(){
 
     $('#modal1submit').on('click', postPost);
     $('#modal2submit').on('click', postPost);
+
+    $('#topBtn').on('click', sortScore);
+    $('#recentBtn').on('click', sortDate);
 });
+
+var getsid = function() {
+    $.ajax( {
+        url: "http://localhost:3000/sub4ums/sname/" + urlsname,
+        type: "GET",
+        dataType: "json"
+    }).done(function(json) {
+        forumsid = json[0].sid;
+        getMods()
+        getSubscribers();
+    });
+
+}
 
 var getSubscribed = function() {
     $.ajax( {
@@ -54,11 +78,21 @@ var getSubscribed = function() {
     });
 }
 
+var getForum = function() {
+    $.ajax( {
+        url: "http://localhost:3000/sub4ums/sname/" + urlsname,
+        type: "GET",
+        dataType: "json"
+    }).done(function(json) {
+        subscribed = json;
+        getPosts();
+    });
+}
+
 var getPosts = function() {
     var promises = [];
     $.each(subscribed, function(index, forum) {
         var sname = forum.sname;
-        console.log(sname);
         var request = $.ajax({
             url: "http://localhost:3000/posts/" + sname,
             type: "GET",
@@ -69,13 +103,11 @@ var getPosts = function() {
         promises.push(request);
     })
     $.when.apply(null, promises).done(function() {
-        loadList();
+        sortScore();
     })
 }
 
-
 var loadList = function() {
-    console.log(listPosts);
     mainList.html('');
     for(var postIndex = 0; postIndex < listPosts.length; postIndex++) {
         var postLi = createPostElem(listPosts[postIndex], postIndex + 1);
@@ -83,7 +115,6 @@ var loadList = function() {
     }
     getVoted();
 }
-
 
 var getVoted = function() {
     $.ajax( {
@@ -119,21 +150,23 @@ var createPostElem = function(post, rank) {
     var scoreStr = createScoreString(post.score);
     var score = $('<div/>').addClass('score').html(scoreStr).attr('data-score', post.score);;
     var downvote =  $('<i/>').addClass("fa fa-arrow-down fa-lg downvote").attr('aria-hidden', 'true');
-
     scoreDiv.append(upvote).append(score).append(downvote);
     var postInfo = $('<div/>').addClass('postInfo');
     var title = $('<div/>').addClass('title').html(post.title);
-    var timestamp = new Date(post.timestamp.replace(' ', 'T'));
-    var tagline = $('<div/>').addClass('tagline').html('submitted on ' + timestamp + ' by ')
+    var timestamp = jQuery.timeago(new Date(post.timestamp.replace(' ', 'T')));
+    var tagline = $('<div/>').addClass('tagline').html('submitted ' + timestamp + ' by ')
     var author = $('<a />', {
         href: post.username, //fix later
         text: post.username,
     }).addClass('author');
-    var forum = $('<a />', {
-        href: post.sname, //fix later
-        text: post.sname
-    }).addClass('forum');
-    tagline.append(author).append(' to ').append(forum);
+    tagline.append(author)
+    if(urlsname == 'home') {
+        var forum = $('<a />', {
+            href: '/s/' + post.sname,
+            text: post.sname
+        }).addClass('forum');
+        tagline.append(' to ').append(forum);
+    }
     var postButtons = $('<ul/>').addClass('postButtons');
     var comments = $('<li/>').addClass('comments').html(0 + ' comments'); //fix later
     var share = $('<li/>').addClass('share').html('share');
@@ -163,10 +196,6 @@ var textareaCounter = function(event) {
         $(event.data.maxID).css('color', '#000');
     }
     $(event.data.currentID).text(len);
-}
-
-var noSpaces = function(event) {
-    if(event.which == 32) return false;
 }
 
 var upvote = function(event) {
@@ -232,6 +261,16 @@ var vote = function(pid, value, type, scoreElem) {
         var newScore = json.score;
         $(scoreElem).attr('data-score', newScore);
         $(scoreElem).html(createScoreString(newScore));
+        for(var index = 0; index < listPosts.length; index++) {
+            if(listPosts[index].pid == pid) {
+                listPosts[index].score = newScore;
+            }
+        }
+        if(sorted == 'score') {
+            sortScore();
+        } else {
+            sortDate();
+        }
     })
 }
 
@@ -242,7 +281,11 @@ var selectPostInfo = function(event) {
 
 var postPost = function(event) {
     var form = $(this).parent();
-    var sname = $(form).find('#sname').val();
+    if(urlsname != 'home') {
+        var sname = urlsname;
+    } else {
+        var sname = $(form).find('#sname').val();
+    }
     var postData = {
         title: $(form).find('#title').val()
     }
@@ -258,8 +301,11 @@ var postPost = function(event) {
         data: postData
     }).done(function(json) {
         listPosts.push(json);
-        var li = createPostElem(listPosts[listPosts.length - 1], listPosts.length);
-        mainList.append(li);
+        if(sorted == 'date') {
+            sortDate();
+        } else {
+            sortScore();
+        }
         closeModal();
         $('.modalState').prop('checked', false);
     });
@@ -279,7 +325,7 @@ var getSUB4UMS = function() {
 var addOptions = function() {
     $.each(sub4ums, function(index, obj) {
         var sname = obj.sname;
-        var option = $('<option/>').html(sname);
+        var option = $('<option/>').html(sname).attr('value', sname);
         $('.SUB4UMlist').append(option);
     })
 }
@@ -289,4 +335,112 @@ var closeModal = function(event) {
     $('form textarea').val('');
     $('.current').html(0);
     $('form input[type=radio]').prop('checked', false);
+}
+
+var sortDate = function() {
+    sorted = 'date';
+    listPosts.sort(function(a,b){
+        return new Date(b.timestamp) - new Date(a.timestamp);
+    });
+    $('#topBtn').css('background', 'none').css('color', 'black');
+    $('#recentBtn').css('background-color', '#59A7C1').css('color', '#fff');
+    loadList();
+}
+
+var sortScore = function() {
+    sorted = 'score';
+    listPosts.sort(function(a,b){
+        var scoreDiff = b.score - a.score;
+        if(scoreDiff != 0) {
+            return scoreDiff;
+        }
+        return new Date(a.timestamp) - new Date(b.timestamp);
+    });
+    $('#topBtn').css('background-color', '#59A7C1').css('color', '#fff');
+    $('#recentBtn').css('background', 'none').css('color', 'black');
+    loadList();
+}
+
+var deleteSub4um = function() {
+    $.ajax({
+        url: "http://localhost:3000/sub4ums/" + urlsname,
+        type: "DELETE",
+    })
+}
+
+var getSubscribers = function() {
+    $.ajax( {
+        url: "http://localhost:3000/sub4ums/subscribers/" + forumsid,
+        type: "GET",
+    }).done(function(json) {
+        subscribers = json;
+        addSubscribersOptions();
+    });
+}
+
+var addSubscribersOptions = function() {
+    $.each(subscribers, function(index, subscriber) {
+        var uid = subscriber.uid;
+        $.ajax({
+            url: "http://localhost:3000/users/" + uid,
+            type: "GET",
+            dataType: "json"
+        }).done(function(json) {
+            var username = json.username;
+            var option = $('<option/>').html(username).attr('value', username).attr('data-uid', subscriber.uid);
+            $('#addModSelect').append(option);
+        })
+    })
+}
+
+var addMod = function() {
+    var uid = $('#addModSelect option:selected').attr('data-uid');
+    var username = $('#addModSelect option:selected').val();
+    $.ajax({
+        url: "http://localhost:3000/sub4ums/mod",
+        type: "POST",
+        data: {uid: uid, sid: forumsid}
+    }).done(function(json) {
+        $('#addModSelect option:selected').remove();
+        var option = $('<option/>').html(username).attr('value', username).attr('data-uid', json.uid);
+        $('#removeModSelect').append(option);
+    });
+}
+
+var getMods = function() {
+    $.ajax( {
+        url: "http://localhost:3000/sub4ums/mods/" + forumsid,
+        type: "GET",
+    }).done(function(json) {
+        mods = json;
+        addModOptions();
+    });
+}
+
+var addModOptions = function() {
+    $.each(mods, function(index, mod) {
+        var uid = mod.uid;
+        $.ajax({
+            url: "http://localhost:3000/users/" + uid,
+            type: "GET",
+            dataType: "json"
+        }).done(function(json) {
+            var username = json.username;
+            var option = $('<option/>').html(username).attr('value', username).attr('data-uid', uid);
+            $('#removeModSelect').append(option);
+        })
+    })
+}
+
+var removeMod = function() {
+    var uid = $('#removeModSelect option:selected').attr('data-uid');
+    var username = $('#removeModSelect option:selected').val();
+    $.ajax({
+        url: "http://localhost:3000/sub4ums/mod/" + uid,
+        type: "DELETE",
+    }).done(function(json) {
+        $('#removeModSelect option:selected').remove();
+        var option = $('<option/>').html(username).attr('value', username).attr('data-uid', uid);
+        $('#addModSelect').append(option);
+    })
 }

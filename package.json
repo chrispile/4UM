@@ -18,7 +18,8 @@
     "http-status-codes": "^1.2.0",
     "morgan": "~1.8.1",
     "pg": "^6.1.0",
-    "serve-favicon": "~2.4.2"
+    "serve-favicon": "~2.4.2",
+    "timeago": "^1.6.1"
   },
   "devDependencies": {
     "mocha": "^3.5.0"

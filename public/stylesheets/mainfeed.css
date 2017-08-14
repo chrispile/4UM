@@ -8,7 +8,6 @@
     padding-left: 15px;
 }
 
-
 .postList {
     padding: 0;
     list-style: none;
@@ -109,4 +108,24 @@ h3 {
     display: inline;
     font-size: 18px;
     float: right;
+}
+
+h6, p {
+    margin: 14px 6px;
+    text-align: center;
+}
+
+#sort {
+    border-bottom: 2px solid #59A7C1;
+}
+
+.sortBtn {
+    background: none;
+    padding: 6px 10px;
+    width: 80px;
+    display: inline-block;
+    margin: 0;
+    border: 2px solid #59A7C1;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
 }

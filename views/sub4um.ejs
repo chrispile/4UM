@@ -1,8 +1,13 @@
-<%- include('header', {title: title, style: 'stylesheets/mainfeed.css'}); %>
+<%- include('header', {title: title, style: '../../stylesheets/mainfeed.css'}); %>
 
-        <h3>Welcome to 4UM</h3>
+        <h3><%=forum.sname%></h3>
+        <h6><%=forum.title%><h6>
+        <p><%=forum.description%><p>
         <label id="createLinkPost" for="modal1">Submit a new link</label>
         <label id="createTextPost" for="modal2">Submit a new text post</label>
+        <% if(isAdmin) { %>
+            <label id="adminOptions" for="modal3">Admin Options</label>
+        <% } %>
     </div>
     <div id="feed">
         <div id="sort">
@@ -31,9 +36,6 @@
                 <span class="max" id="max1">/ 300</span>
             </div>
             <textarea type="text" id="title" name="postTitle" maxlength="300" required></textarea></br>
-
-            <label for="sname">choose a SUB4UM</label></br>
-            <select id="sname" name="sname" class="SUB4UMlist" required></select>
 
             <input type="submit" value="submit" id="modal1submit">
         </form>
@@ -64,14 +66,51 @@
 
             <textarea type="text" id="text" name="postText" maxlength="40000"></textarea></br>
 
-            <label for="sname">choose a SUB4UM</label></br>
-            <select id="sname" name="sname" class="SUB4UMlist" required></select>
-
-
             <input type="submit" value="submit" id="modal2submit">
         </form>
     </div>
 </div>
 
+<input class="modalState" id="modal3" type="checkbox"/>
+<div class="modal">
+    <label class="modalBg" for="modal3"></label>
+    <div class="modalContent">
+        <label for="modal3">
+            <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
+        </label>
+        <h2>Admin Options</h2>
 
-<%- include('footer', {script: "javascripts/mainfeed.js"}); %>
+        <form id="changeType">
+            <label>Change Type</label><br>
+            <label>
+                <input type="radio" name="type" value="public">
+                <i>public</i>
+            </label><br>
+            <label>
+                <input type="radio" name="type" value="protected">
+                <i>protected</i>
+            </label><br>
+            <label>
+                <input type="radio" name="type" value="private" required>
+                <i>private</i>
+            </label><br>
+            <input type="submit" value="Change">
+        </form>
+
+        <form id="addMods">
+            <label for="username">Add Moderator</label>
+            <select id="addModSelect" name="username" required></select>
+            <input type="submit" value="Add" id="addModBtn">
+        </form>
+
+        <form id="removeMods">
+            <label for="username">Remove Moderator</label>
+            <select id="removeModSelect" name="username" required></select>
+            <input type="submit" value="Remove" id="removeModBtn">
+        </form>
+
+        <button id="deleteSub4um" onclick="location.href='/SUB4UM';">DELETE SUB4UM</button>
+
+</div>
+
+<%- include('footer', {script: "../../javascripts/mainfeed.js"}); %>

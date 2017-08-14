@@ -56,7 +56,6 @@ router.post('/voted/:pid', function(req, res, next) {
         queryConfig.text = "INSERT INTO voted(uid, pid, type) VALUES ($1, $2, $3) ON CONFLICT(uid, pid) DO UPDATE SET type=EXCLUDED.type";
         queryConfig.values = [res.locals.user.uid, req.params.pid, req.body.type];
     }
-    //insert or update voted table
     pgClient.query(queryConfig, function(err, result) {
         if(err) {
             console.log(err);

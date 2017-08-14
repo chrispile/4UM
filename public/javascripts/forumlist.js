@@ -11,9 +11,11 @@ var user4UMs = [];
 var publicList;
 var protectedList;
 var subscribedList;
+var admin = [];
 
 $(document).ready(function() {
     getSUB4UMS();
+
 
     publicList = $('#publicList');
     protectedList = $('#protectedList');
@@ -30,6 +32,8 @@ $(document).ready(function() {
     })
 
     $('#modal1submit').on('click', postSUB4UM);
+
+    $('#sname').keypress(noSpaces);
 
 
 });
@@ -52,11 +56,20 @@ var getSubscribed = function() {
         dataType: "json"
     }).done(function(json) {
         user4UMs = json;
-        loadLists();
+        getAdminSub4ums();
     });
 }
 
 
+var getAdminSub4ums = function() {
+    $.ajax({
+        url: "http://localhost:3000/sub4ums/admin",
+        type: "GET"
+    }).done(function(json) {
+        admin = json;
+        loadLists();
+    })
+}
 
 var loadLists = function() {
     $.each(user4UMs, function(index, forum) {
@@ -85,6 +98,14 @@ var alreadySubscribed = function(sname) {
     return false;
 }
 
+var isAdmin = function(sid) {
+    for(var i = 0; i < admin.length; i++) {
+        if(admin[i].sid == sid) {
+            return true;
+        }
+    }
+    return false;
+}
 
 var subscribe = function(event) {
     var li = $(this).parent();
@@ -145,22 +166,32 @@ var postSUB4UM = function(event) {
     var postData = {
         sname: sname, title: title, description: description, type: type
     }
-
     $.ajax({
         url: "http://localhost:3000/sub4ums",
         type: "POST",
         data: postData
-    }).done(function(json) {
+    }).done(function(arr) {
+        console.log(arr);
         closeModal();
         $('.modalState').prop('checked', false);
-        forumList.push(json);
-        var newLi = createLi(json.sname, 'unsubscribe', json.sid)
+        forumList.push(arr[0]);
+        admin.push(arr[1]);
+        var newLi = createLi(arr[0].sname, 'unsubscribe', arr[0].sid)
         subscribedList.append(newLi);
     });
 }
 
 var createLi = function(name, type, sid) {
-    var li = $('<li/>').addClass('li4UM').html(name);
+    var adminBool = isAdmin(sid);
+    var li = $('<li/>').addClass('li4UM');
+    var a = document.createElement('a');
+    $(a).attr('href','/s/' + name);
+    if(adminBool) {
+        $(a).html(name + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>[admin]</i>');
+    } else {
+        $(a).html(name);
+    }
+    li.append(a)
     var label = $('<button/>').addClass(type).html(type);
     li.attr('data-sname', name);
     li.attr('data-sid', sid);
@@ -173,4 +204,8 @@ var closeModal = function(event) {
     $('form textarea').val('');
     $('.current').html(0);
     $('form input[type=radio]').prop('checked', false);
+}
+
+var noSpaces = function(event) {
+    if(event.which == 32) return false;
 }
