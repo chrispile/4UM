@@ -3,7 +3,6 @@ NEED TO DO
 - Requesting to join a protected SUB4UM
 - Joining a private SUB4UM through the modal
 - Having front end show the type (public, protected, private) of each of the  user's subscribed SUB4UMS
-    - Currently only displays ALL subscribed SUB4UMs in one block w/o any identification of type
 */
 
 var forumList;
@@ -11,11 +10,12 @@ var user4UMs = [];
 var publicList;
 var protectedList;
 var subscribedList;
+var requesteds;
 var admin = [];
+var mod4UMS;
 
 $(document).ready(function() {
     getSUB4UMS();
-
 
     publicList = $('#publicList');
     protectedList = $('#protectedList');
@@ -26,16 +26,16 @@ $(document).ready(function() {
 
     $('#publicList').on('click', '.subscribe', subscribe);
     $('#subscribedList').on('click', '.unsubscribe', unsubscribe);
+    $('#protectedList').on('click', '.request', request);
+
 
     $('.modalContent form').on('submit', function() {
-        return false;
+        event.preventDefault();
     })
 
     $('#modal1submit').on('click', postSUB4UM);
 
     $('#sname').keypress(noSpaces);
-
-
 });
 
 var getSUB4UMS = function() {
@@ -60,15 +60,35 @@ var getSubscribed = function() {
     });
 }
 
-
 var getAdminSub4ums = function() {
     $.ajax({
         url: "http://localhost:3000/sub4ums/admin",
         type: "GET"
     }).done(function(json) {
         admin = json;
-        loadLists();
+        getModSub4ums();
     })
+}
+
+var getModSub4ums = function() {
+    $.ajax({
+        url: "http://localhost:3000/sub4ums/mods",
+        type: "GET"
+    }).done(function(json) {
+        mod4UMS = json;
+        getRequests();
+    })
+}
+
+var getRequests = function() {
+    $.ajax( {
+        url: "http://localhost:3000/sub4ums/requests",
+        type: "GET",
+        dataType: "json"
+    }).done(function(json) {
+        requests = json;
+        loadLists();
+    });
 }
 
 var loadLists = function() {
@@ -82,7 +102,8 @@ var loadLists = function() {
                 var li = createLi(forum.sname, 'subscribe', forum.sid);
                 publicList.append(li);
             } else {
-                var li = createLi(forum.sname, 'request', forum.sid);
+                var status = isPending(forum.sname)
+                var li = createLi(forum.sname, status, forum.sid);
                 protectedList.append(li);
             }
         }
@@ -105,6 +126,24 @@ var isAdmin = function(sid) {
         }
     }
     return false;
+}
+
+var isMod = function(sid) {
+    for(var i = 0; i < mod4UMS.length; i++) {
+        if(mod4UMS[i].sid == sid) {
+            return true;
+        }
+    }
+    return false;
+}
+
+var isPending = function(sname) {
+    for(var i = 0; i < requests.length; i++) {
+        if(requests[i].sname == sname) {
+            return 'pending'
+        }
+    }
+    return 'request'
 }
 
 var subscribe = function(event) {
@@ -159,39 +198,53 @@ var unsubscribe = function(event) {
 
 var postSUB4UM = function(event) {
     var form = $(this).parent();
-    var sname = $(form).find('#sname').val();
-    var title = $(form).find('#title').val();
-    var description = $(form).find('#desc').val();
-    var type = $(form).find("[name='type']:checked").val();
-    var postData = {
-        sname: sname, title: title, description: description, type: type
+    if($(form)[0].checkValidity()) {
+        var sname = $(form).find('#sname').val();
+        var title = $(form).find('#title').val();
+        var description = $(form).find('#desc').val();
+        var type = $(form).find("[name='type']:checked").val();
+        var postData = {
+            sname: sname, title: title, description: description, type: type
+        }
+        $.ajax({
+            url: "http://localhost:3000/sub4ums",
+            type: "POST",
+            data: postData
+        }).done(function(arr) {
+            closeModal();
+            $('.modalState').prop('checked', false);
+            forumList.push(arr[0]);
+            admin.push(arr[1]);
+            var newLi = createLi(arr[0].sname, 'unsubscribe', arr[0].sid)
+            subscribedList.append(newLi);
+        }).fail(function (jqXHR, textStatus, error) {
+            var response = jQuery.parseJSON(jqXHR.responseText);
+            var errorDiv = $('<div/>').addClass("failDiv");
+            var exclamation = $('<i/>').addClass("fa fa-exclamation-triangle").attr('aria-hidden', 'true');
+            var message = $('<div/>').addClass("failMessage").html(response.error.name);
+            errorDiv.append(exclamation).append(message);
+
+            $('#sname').before(errorDiv);
+        });
     }
-    $.ajax({
-        url: "http://localhost:3000/sub4ums",
-        type: "POST",
-        data: postData
-    }).done(function(arr) {
-        console.log(arr);
-        closeModal();
-        $('.modalState').prop('checked', false);
-        forumList.push(arr[0]);
-        admin.push(arr[1]);
-        var newLi = createLi(arr[0].sname, 'unsubscribe', arr[0].sid)
-        subscribedList.append(newLi);
-    });
+
 }
 
 var createLi = function(name, type, sid) {
     var adminBool = isAdmin(sid);
+    var modBool = isMod(sid);
     var li = $('<li/>').addClass('li4UM');
     var a = document.createElement('a');
     $(a).attr('href','/s/' + name);
     if(adminBool) {
-        $(a).html(name + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>[admin]</i>');
-    } else {
-        $(a).html(name);
+        var icon =  $('<i/>').addClass("fa fa-key icon").attr('aria-hidden', 'true');
     }
+    else if(modBool) {
+        var icon = $('<i/>').addClass("fa fa-shield icon").attr('aria-hidden', 'true');
+    }
+    $(a).html(name).append(icon);
     li.append(a)
+
     var label = $('<button/>').addClass(type).html(type);
     li.attr('data-sname', name);
     li.attr('data-sid', sid);
@@ -204,8 +257,23 @@ var closeModal = function(event) {
     $('form textarea').val('');
     $('.current').html(0);
     $('form input[type=radio]').prop('checked', false);
+    $('.failDiv').remove();
 }
 
 var noSpaces = function(event) {
     if(event.which == 32) return false;
+}
+
+var request = function(event) {
+    var btn = $(this);
+    var li = $(btn).parent();
+    var sid = $(li).attr('data-sid');
+    var sname = $(li).attr('data-sname');
+    $.ajax({
+        url: "http://localhost:3000/sub4ums/request",
+        type: "POST",
+        data: {sid: sid, sname: sname}
+    }).done(function(json) {
+        $(btn).removeClass('request').addClass('pending').html('pending');
+    });
 }

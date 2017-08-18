@@ -2,6 +2,8 @@ var express = require('express');
 var router = express.Router();
 var pgSetup = require('../pgSetup.js');
 var pgClient = pgSetup.getClient();
+var HttpStatus = require('http-status-codes')
+
 
 router.get('/voted', function(req, res, next) {
     pgClient.query("SELECT * FROM voted WHERE uid=$1", [res.locals.user.uid], function(err, result) {
@@ -72,6 +74,16 @@ router.post('/voted/:pid', function(req, res, next) {
             })
         }
     });
+})
+
+router.delete('/', function(req, res, next) {
+    pgClient.query('DELETE FROM Posts WHERE pid=$1', [req.body.pid], function(err, result) {
+        if(err) {
+            console.log(err);
+        } else {
+            res.sendStatus(HttpStatus.OK);
+        }
+    })
 })
 
 module.exports = router;

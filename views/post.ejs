@@ -1,0 +1,54 @@
+<%- include('header', {title: title, style: '../../stylesheets/mainfeed.css'}); %>
+        <h3><a href="/s/<%=forum.sname%>"><%=forum.sname%></a></h3>
+        <h6><%=forum.title%></h6>
+        <p><%=forum.description%><p>
+
+    </div>
+
+    <div id="feed">
+        <ol class="postList">
+            <li class="post" data-pid="<%=post.pid%>">
+                <div class="scoreDiv">
+                    <i class="fa fa-arrow-up fa-lg upvote" aria-hidden="true"></i>
+                    <div class="score" data-score="<%=post.score%>"><%=post.score%></div>
+                    <i class="fa fa-arrow-down fa-lg downvote" aria-hidden="true"></i>
+                </div>
+                <div class="postInfo">
+                    <div class="title">
+                        <% if(post.url!=null) { %>
+                            <a href="<%=post.url%>"><%=post.title%></a>
+                        <% } else { %>
+                            <%=post.title%>
+                        <% }  %>
+                    </div>
+                    <div id="tagline" data-timestamp="<%=post.timestamp%>" data-author="<%=post.username%>" data-sname="<%=post.sname%>"></div>
+                    <% if(post.text!=null) { %>
+                        <div class="text textDiv"><%=post.text%></div>
+                    <% } %>
+                    <ul class="postButtons">
+                        <li class="comments">0 comments</li>
+                        <% if(canDelete) { %>
+                            <li class="deleteBtn">delete</li>
+                        <% } %>
+                    </ul>
+                </div>
+            </li>
+        </ol>
+        <div id="commentDiv">
+            <form>
+                <div >Comment</div>
+                <textarea type="text" id="commentTextArea" name="comment" maxlength="40000"></textarea></br>
+                <input type="submit" value="save" data-sid="<%forum.sid%>">
+            </form>
+            <ul id="commentList">
+                <li id="comment" class="textDiv">
+                    <div class="commentHeader"><a href="hellocuhris" class="author">hellocuhris</a> 14 hours ago</div>
+                    <div class="text" id="commentText">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus sodales, tellus quis pulvinar tempus, nibh eros ultrices metus, quis scelerisque massa ante feugiat ex. Suspendisse porttitor ante eget justo blandit dignissim ac ac turpis. Maecenas gravida quis nulla vel pretium. Proin pretium, lacus et vestibulum ullamcorper, metus leo hendrerit sem, et bibendum orci sem sed orci. Donec vel neque diam. In vitae gravida ex. Vestibulum nec quam luctus, placerat massa non, feugiat libero. Nam facilisis nisi ac consectetur interdum. Morbi ac ullamcorper ipsum, quis faucibus enim.</div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+<%- include('footer', {script: "../../javascripts/post.js"}); %>

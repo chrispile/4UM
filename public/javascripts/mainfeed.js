@@ -1,7 +1,6 @@
 /*
 NEED TO TO
 - Posts need to direct user to new page
-- Post buttons are non-functioning rn (comments, share, save, report)
 - Usernames on posts need to direct to new pages
 */
 
@@ -15,8 +14,9 @@ var sorted;
 var subscribers;
 var mods;
 var forumsid;
+var userRequests;
 
-$(document).ready(function(){
+$(document).ready(function() {
     urlsname = (window.location.href).split('/').pop();
 
     mainList = $('.postList');
@@ -29,7 +29,6 @@ $(document).ready(function(){
         $('#deleteSub4um').on('click', deleteSub4um);
         $('#addModBtn').on('click', addMod);
         $('#removeModBtn').on('click', removeMod);
-
     }
 
     $('#title1').keyup({max: 300, currentID: '#current1', maxID: '#max1'}, textareaCounter);
@@ -42,13 +41,15 @@ $(document).ready(function(){
     $(mainList).on('click', '.upvote', upvote);
     $(mainList).on('click', '.downvote', downvote);
     $(mainList).on('click', '.postInfo', selectPostInfo);
+    $(mainList).on('click', '.deleteBtn', deletePost);
 
     $('.modalContent form').on('submit', function() {
-        return false;
+        event.preventDefault();
     })
 
     $('#modal1submit').on('click', postPost);
     $('#modal2submit').on('click', postPost);
+    $('#approveUsersBtn').on('click', approveRequests);
 
     $('#topBtn').on('click', sortScore);
     $('#recentBtn').on('click', sortDate);
@@ -61,8 +62,9 @@ var getsid = function() {
         dataType: "json"
     }).done(function(json) {
         forumsid = json[0].sid;
-        getMods()
+        getMods(forumsid);
         getSubscribers();
+        getUserRequests();
     });
 
 }
@@ -152,8 +154,15 @@ var createPostElem = function(post, rank) {
     var downvote =  $('<i/>').addClass("fa fa-arrow-down fa-lg downvote").attr('aria-hidden', 'true');
     scoreDiv.append(upvote).append(score).append(downvote);
     var postInfo = $('<div/>').addClass('postInfo');
-    var title = $('<div/>').addClass('title').html(post.title);
-    var timestamp = jQuery.timeago(new Date(post.timestamp.replace(' ', 'T')));
+    var title = $('<div/>').addClass('title');
+    var url = '/s/' + post.sname + '/' + post.pid;
+    var aJSON = { href: url, text: post.title}
+    if(post.url != null) {
+        aJSON.href = post.url
+    }
+    var linkedTitle = $('<a />', aJSON);
+    title.append(linkedTitle);
+    var timestamp = jQuery.timeago(new Date(post.timestamp));
     var tagline = $('<div/>').addClass('tagline').html('submitted ' + timestamp + ' by ')
     var author = $('<a />', {
         href: post.username, //fix later
@@ -168,14 +177,30 @@ var createPostElem = function(post, rank) {
         tagline.append(' to ').append(forum);
     }
     var postButtons = $('<ul/>').addClass('postButtons');
-    var comments = $('<li/>').addClass('comments').html(0 + ' comments'); //fix later
-    var share = $('<li/>').addClass('share').html('share');
-    var save = $('<li/>').addClass('save').html('save');
-    var report = $('<li/>').addClass('report').html('report');
-    postButtons.append(comments).append(share).append(save).append(report);
+    var comments = $('<li/>').addClass('comments');
+    var commentsA = $('<a />', {
+        href: url,
+        text: "0 comments" //FIX LATER
+    })
+    comments.append(commentsA);
+    postButtons.append(comments);
+    var qualified = qualifiedToDelete(post.sname).then(function(result) {
+        if(result) {
+            var deleteBtn = $('<li/>').addClass('deleteBtn').html('delete');
+            postButtons.append(deleteBtn);
+        }
+    });
     postInfo.append(title).append(tagline).append(postButtons);
     li.append(postNum).append(scoreDiv).append(postInfo);
     return li;
+}
+
+async function qualifiedToDelete(sname) {
+    var json = await $.ajax({
+        url: "http://localhost:3000/sub4ums/qualified/" + sname,
+        type: "GET"
+    })
+    return json.qualified;
 }
 
 var createScoreString = function(score) {
@@ -281,34 +306,36 @@ var selectPostInfo = function(event) {
 
 var postPost = function(event) {
     var form = $(this).parent();
-    if(urlsname != 'home') {
-        var sname = urlsname;
-    } else {
-        var sname = $(form).find('#sname').val();
-    }
-    var postData = {
-        title: $(form).find('#title').val()
-    }
-    if($(form).attr('id') == 'postLinkForm') {
-        postData.url = $(form).find('#url').val();
-    }
-    else if($(form).attr('id') == 'postTextForm') {
-        postData.text = $(form).find('#text').val();
-    }
-    $.ajax({
-        url: "http://localhost:3000/posts/" + sname,
-        type: "POST",
-        data: postData
-    }).done(function(json) {
-        listPosts.push(json);
-        if(sorted == 'date') {
-            sortDate();
+    if($(form)[0].checkValidity()) {
+        if(urlsname != 'home') {
+            var sname = urlsname;
         } else {
-            sortScore();
+            var sname = $(form).find('#sname').val();
         }
-        closeModal();
-        $('.modalState').prop('checked', false);
-    });
+        var postData = {
+            title: $(form).find('#title').val()
+        }
+        if($(form).attr('id') == 'postLinkForm') {
+            postData.url = $(form).find('#url').val();
+        }
+        else if($(form).attr('id') == 'postTextForm') {
+            postData.text = $(form).find('#text').val();
+        }
+        $.ajax({
+            url: "http://localhost:3000/posts/" + sname,
+            type: "POST",
+            data: postData
+        }).done(function(json) {
+            listPosts.push(json);
+            if(sorted == 'date') {
+                sortDate();
+            } else {
+                sortScore();
+            }
+            closeModal();
+            $('.modalState').prop('checked', false);
+        });
+    }
 }
 
 var getSUB4UMS = function() {
@@ -332,6 +359,7 @@ var addOptions = function() {
 
 var closeModal = function(event) {
     $('form input[type=text]').val('');
+    $('form input[type=url]').val('');
     $('form textarea').val('');
     $('.current').html(0);
     $('form input[type=radio]').prop('checked', false);
@@ -407,9 +435,9 @@ var addMod = function() {
     });
 }
 
-var getMods = function() {
+var getMods = function(sid) {
     $.ajax( {
-        url: "http://localhost:3000/sub4ums/mods/" + forumsid,
+        url: "http://localhost:3000/sub4ums/mods/" + sid,
         type: "GET",
     }).done(function(json) {
         mods = json;
@@ -442,5 +470,77 @@ var removeMod = function() {
         $('#removeModSelect option:selected').remove();
         var option = $('<option/>').html(username).attr('value', username).attr('data-uid', uid);
         $('#addModSelect').append(option);
+    })
+}
+
+var checkURL = function() {
+    var string = url.value;
+    if (!~string.indexOf("http")) {
+      string = "http://" + string;
+    }
+    url.value = string;
+    return url
+}
+
+
+var deletePost = function(event) {
+    var post = $(this).parentsUntil($('ol .postList'), '.post')[0];
+    var pid = $(post).attr('data-pid');
+    $.ajax({
+        url: "http://localhost:3000/posts",
+        type: "DELETE",
+        data: {pid: pid}
+    }).done(function() {
+        for(var i = 0; i < listPosts.length; i++) {
+            if(listPosts[i].pid == pid) {
+                listPosts.splice(i, 1);
+            }
+        };
+        loadList();
+    });
+}
+
+var getUserRequests = function() {
+    $.ajax({
+        url: "http://localhost:3000/sub4ums/requests/" + forumsid,
+        type: "GET",
+        dataType: "json"
+    }).done(function(json) {
+        userRequests = json;
+        $.each(userRequests, function(i, request) {
+            var uid = request.uid;
+            $.ajax({
+                url: "http://localhost:3000/users/" + uid,
+                type: "GET",
+                dataType: "json"
+            }).done(function(json) {
+                var username = json.username;
+                var input = $('<input>').attr({type: 'checkbox', name: 'username', value: username});
+                var inputStr = "<input type='checkbox' name='username' value='" + username + "' data-uid='" + uid + "'>";
+                var label = $('<label/>').html(inputStr + " " + username);
+                $(label).appendTo('#userRequestsList')
+            });
+        });
+    })
+}
+
+var approveRequests = function(event) {
+    $('#userRequestsList label input:checked').each(function() {
+        var username = $(this).val();
+        var uid = $(this).attr('data-uid');
+        var label = $(this).parent();
+        $.ajax({ //remove from requests
+            url: "http://localhost:3000/sub4ums/requests",
+            type: "DELETE",
+            data: {uid:uid, sid: forumsid}
+        }).done(function() {
+            $.ajax({ //add to subscribers
+                url: "http://localhost:3000/sub4ums/subscribe/" + uid,
+                type: "POST",
+                data: {sid: forumsid, sname: urlsname}
+            }).done(function() {
+                $(label).remove(); //remove from user requests
+            })
+        })
     })
 }

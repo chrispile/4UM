@@ -1,12 +1,15 @@
 <%- include('header', {title: title, style: '../../stylesheets/mainfeed.css'}); %>
 
         <h3><%=forum.sname%></h3>
-        <h6><%=forum.title%><h6>
-        <p><%=forum.description%><p>
+        <h6><%=forum.title%></h6>
+        <p><%=forum.description%></p>
         <label id="createLinkPost" for="modal1">Submit a new link</label>
         <label id="createTextPost" for="modal2">Submit a new text post</label>
         <% if(isAdmin) { %>
             <label id="adminOptions" for="modal3">Admin Options</label>
+        <% }
+        if(isAdmin || isMod) { %>
+            <label id="addUsers" for="modal4">Add Users</label>
         <% } %>
     </div>
     <div id="feed">
@@ -28,14 +31,14 @@
         <h2>Submit link to 4UM</h2>
         <form id="postLinkForm">
             <label for="url">url</label></br>
-            <input type="text" id="url" name="postUrl" required></br>
+            <input type="url" id="url" name="postUrl" onblur="checkURL(this)" required></br>
 
             <label for="title">title</label>
             <div class="charNum">
                 <span class="current" id="current1">0</span>
                 <span class="max" id="max1">/ 300</span>
             </div>
-            <textarea type="text" id="title" name="postTitle" maxlength="300" required></textarea></br>
+            <input type="text" id="title" name="postTitle" maxlength="300" required></input></br>
 
             <input type="submit" value="submit" id="modal1submit">
         </form>
@@ -56,7 +59,7 @@
                 <span class="current" id="current2">0</span>
                 <span class="max" id="max2">/ 300</span>
             </div>
-            <textarea type="text" id="title" name="postTitle" maxlength="300" required></textarea></br>
+            <input type="text" id="title" name="postTitle" maxlength="300" required></input></br>
 
             <label for="text">text (optional)</label>
             <div class="charNum">
@@ -80,23 +83,6 @@
         </label>
         <h2>Admin Options</h2>
 
-        <form id="changeType">
-            <label>Change Type</label><br>
-            <label>
-                <input type="radio" name="type" value="public">
-                <i>public</i>
-            </label><br>
-            <label>
-                <input type="radio" name="type" value="protected">
-                <i>protected</i>
-            </label><br>
-            <label>
-                <input type="radio" name="type" value="private" required>
-                <i>private</i>
-            </label><br>
-            <input type="submit" value="Change">
-        </form>
-
         <form id="addMods">
             <label for="username">Add Moderator</label>
             <select id="addModSelect" name="username" required></select>
@@ -110,7 +96,36 @@
         </form>
 
         <button id="deleteSub4um" onclick="location.href='/SUB4UM';">DELETE SUB4UM</button>
+    </div>
+</div>
 
+<input class="modalState" id="modal4" type="checkbox"/>
+<div class="modal">
+    <label class="modalBg" for="modal4"></label>
+    <div class="modalContent">
+        <label for="modal4">
+            <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
+        </label>
+        <h2>Add Users</h2>
+
+        <!--Only show this option if the SUB4UM is protected-->
+        <form id="userRequests">
+            <label for="username">Pending User Requests</label>
+            <ul id="userRequestsList"></ul>
+            <input type="submit" value="Approve" id="approveUsersBtn">
+        </form>
+
+        <!--
+        TODO:
+            Send mail to user
+            Check if username exists before sending
+        -->
+        <form id="removeMods">
+            <label for="username">Enter username to invite:</label>
+            <input type="text" name="username" required></input>
+            <input type="submit" value="Invite" id="inviteBtn">
+        </form>
+    </div>
 </div>
 
 <%- include('footer', {script: "../../javascripts/mainfeed.js"}); %>

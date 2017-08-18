@@ -170,7 +170,6 @@ header {
     height: 25%;
 }
 
-
 h2 {
     margin: 0;
     margin-bottom: 10px;
@@ -180,7 +179,7 @@ form {
     margin-top: 8px;
 }
 
-form input[type=text], textarea, #removeModSelect, #addModSelect{
+form input[type=url], form input[type=text], textarea, #removeModSelect, #addModSelect{
     width: 100%;
     padding: 12px;
     border: 1px solid #ccc;
@@ -235,7 +234,6 @@ select option:hover {
     background-color: #458296;
 }
 
-
 #deleteSub4um {
     position: relative;
     bottom: 0;
@@ -260,4 +258,15 @@ select option:hover {
 
 #removeModBtn:hover, #deleteSub4um:hover {
     background-color: #993527;
+}
+
+.failDiv {
+    display: inline-block;
+    margin: 0 0 0 10px;
+    font-size: 12px;
+    color: #F0523D;
+}
+
+.failMessage {
+    display: inline-block;
 }

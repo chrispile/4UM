@@ -8,7 +8,7 @@
     padding-left: 15px;
 }
 
-.postList {
+ul {
     padding: 0;
     list-style: none;
 }
@@ -103,7 +103,6 @@ h3 {
     text-align: center;
 }
 
-
 .charNum {
     display: inline;
     font-size: 18px;
@@ -129,3 +128,45 @@ h6, p {
     border-bottom: none;
     border-radius: 4px 4px 0 0;
 }
+
+#userRequestsList {
+   padding: 0;
+   list-style: none;
+   margin: 5px 0 10px 0;
+}
+
+#userRequestsList label {
+    display: block;
+}
+
+
+.text {
+    white-space: pre-wrap;
+}
+
+#commentDiv {
+    margin: 0 22px;
+}
+
+#commentTextArea {
+    width: 600px;
+    height: 125px;
+    background-color: #F6F7F9;
+    border: .5px solid black;
+}
+
+.textDiv {
+     background-color: #e5e5e5;
+     padding: 12px;
+     border: .5px solid black;
+     margin: 4px 0;
+     border-radius: 6px;
+ }
+
+ .commentHeader {
+     margin-bottom: 6px;
+ }
+
+ #commentList li {
+     margin-bottom: 14px;
+ }

@@ -18,6 +18,10 @@ router.get('/recover', function(req, res, next) {
     res.render('recover', {title: 'Recover', fail: ''});
 })
 
+// router.get('/post', function(req, res, next) {
+//     res.render('post', {title:'Post'});
+// })
+
 router.post('/login', function(req, res, next) {
     var encryptPass = sha1.hash(req.body.password);
     var queryConfig = {
@@ -63,20 +67,65 @@ router.get('/s/:sname', requireLogin, function(req, res, next) {
             console.log(err);
         } else {
             if(result.rows.length == 0) {
-                res.status(404).end();
-                //throw error because the sub4um is not public or the user is not subscribed.
+                res.redirect('/home');
             } else {
                 var forum = result.rows[0];
-                pgClient.query('SELECT EXISTS(SELECT 1 FROM Admins WHERE uid=$1 AND sid=$2)', [res.locals.user.uid, result.rows[0].sid], function(err, result) {
+                pgClient.query('SELECT EXISTS(SELECT 1 FROM Admins WHERE uid=$1 AND sid=$2)', [res.locals.user.uid, forum.sid], function(err, result) {
                     if(result.rows[0].exists) {
-                        res.render('sub4um', {title: forum.sname, forum: forum, isAdmin: true});
+                        res.render('sub4um', {title: forum.sname, forum: forum, isAdmin: true, isMod: false});
                     } else {
-                        res.render('sub4um', {title: forum.sname, forum: forum, isAdmin: false});
+                        pgClient.query('SELECT EXISTS(SELECT 1 FROM Moderators WHERE uid=$1 AND sid=$2)', [res.locals.user.uid, forum.sid], function(err, result) {
+                            if(result.rows[0].exists) {
+                                res.render('sub4um', {title: forum.sname, forum: forum, isAdmin: false, isMod: true});
+                            } else {
+                                res.render('sub4um', {title: forum.sname, forum: forum, isAdmin: false, isMod: false});
+                            }
+                        })
+                    }
+                });
+            }
+        }
+    })
+})
+
+
+router.get('/s/:sname/:pid', requireLogin, function(req, res, next) {
+    //check if sname is public, if not then check if user is subscribed
+    queryConfig = {
+        text: "SELECT * FROM sub4ums WHERE sname=$1 AND (type='public' OR EXISTS(SELECT * FROM subscribes WHERE uid=$2 AND sname=$1))",
+        values: [req.params.sname, res.locals.user.uid]
+    }
+    pgClient.query(queryConfig, function(err, result) {
+        if(err) {
+            console.log(err);
+        } else {
+            if(result.rows.length == 0) {
+                res.redirect('/home');
+            } else {
+                var forum = result.rows[0];
+                pgClient.query('SELECT * FROM Posts WHERE sname=$1 AND pid=$2', [req.params.sname, req.params.pid] , function(err, result) {
+                    if(err) {
+                        console.log(err);
+                    } else if(result.rows.length == 0) {
+                        res.redirect('/home');
+                    } else {
+                        var post = result.rows[0];
+                        queryConfig = {
+                            text: "SELECT EXISTS(SELECT 1 FROM (SELECT * FROM Admins UNION ALL SELECT * FROM Moderators) AS A WHERE uid=$1 AND sid = $2)",
+                            values: [res.locals.user.uid, forum.sid]
+                        }
+                        pgClient.query(queryConfig, function(err, result) {
+                            if(result.rows[0].exists) {
+                                res.render('post', {title: post.title + ' | ' + forum.sname, forum: forum, post:post, canDelete: true});
+                            } else {
+                                res.render('post', {title:  post.title + ' | ' + forum.sname, forum, post:post, canDelete: false});
+                            }
+                        })
                     }
                 })
             }
         }
     })
-})
+});
 
 module.exports = router;

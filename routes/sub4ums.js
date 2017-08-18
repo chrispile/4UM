@@ -2,10 +2,21 @@ var express = require('express');
 var router = express.Router();
 var pgSetup = require('../pgSetup.js');
 var pgClient = pgSetup.getClient();
+var errorCodes = require('../errorCodes');
 var HttpStatus = require('http-status-codes')
 
 router.get('/admin', function(req, res, next) {
     pgClient.query("SELECT * FROM Admins WHERE uid=$1", [res.locals.user.uid], function(err, result) {
+        if(err) {
+            console.log(err);
+        } else {
+            res.json(result.rows);
+        }
+    })
+})
+
+router.get('/mods', function(req, res, next) {
+    pgClient.query("SELECT * FROM Moderators WHERE uid=$1", [res.locals.user.uid], function(err, result) {
         if(err) {
             console.log(err);
         } else {
@@ -23,6 +34,27 @@ router.get('/mods/:sid', function(req, res, next) {
         }
     })
 })
+
+//Checks if the user is either an Admin or Moderator for the specified SUB4UM.
+//This is used to determine if they can delete posts
+router.get('/qualified/:sname', function(req, res, next) {
+    var queryConfig = {
+        text: "SELECT EXISTS(SELECT * FROM (SELECT uid FROM Moderators left join sub4ums on moderators.sid = sub4ums.sid WHERE sub4ums.sname = $2 UNION ALL SELECT uid FROM Admins left join sub4ums on Admins.sid = sub4ums.sid WHERE sub4ums.sname = $2) AS A WHERE uid=$1)",
+        values: [res.locals.user.uid, req.params.sname]
+    };
+    pgClient.query(queryConfig, function(err, result) {
+        if(err) {
+            console.log(err)
+        } else {
+            if(result.rows[0].exists) {
+                res.json({qualified: true});
+            } else {
+                res.json({qualified: false});
+            }
+        }
+    })
+})
+
 
 router.get('/public', function(req, res, next) {
     pgClient.query("SELECT * FROM sub4ums WHERE type=$1", ['public'], function(err, result) {
@@ -51,7 +83,6 @@ router.get('/subscribers/:sid', function(req, res, next) {
         if(err) {
             console.log(err)
         } else {
-            console.log(result.rows);
             res.json(result.rows);
         }
     })
@@ -66,6 +97,28 @@ router.get('/subscribe', function(req, res, next) {
         }
     })
 })
+
+router.get('/requests/:sid', function(req, res, next) {
+    pgClient.query('SELECT * FROM requests WHERE sid=$1', [req.params.sid], function(err, result) {
+        if(err) {
+            console.log(err)
+        } else {
+            res.json(result.rows);
+        }
+    })
+})
+
+router.get('/requests', function(req, res, next) {
+    pgClient.query('SELECT * FROM requests WHERE uid=$1', [res.locals.user.uid], function(err, result) {
+        if(err) {
+            console.log(err)
+        } else {
+            res.json(result.rows);
+        }
+    })
+})
+
+
 
 
 router.get('/sname', function(req, res, next) {
@@ -121,8 +174,28 @@ router.get('/', function(req, res, next) {
     })
 });
 
+router.post('/request', function(req, res, next) {
+    pgClient.query('INSERT INTO requests(uid, sid, sname) VALUES ($1, $2, $3) RETURNING *', [res.locals.user.uid, req.body.sid, req.body.sname], function(err, result) {
+        if(err) {
+            console.log(err);
+        } else {
+            res.json(result.rows[0]);
+        }
+    })
+})
+
 router.post('/subscribe', function(req, res, next) {
     pgClient.query('INSERT INTO subscribes(uid, sid, sname) VALUES ($1, $2, $3) RETURNING *', [res.locals.user.uid, req.body.sid, req.body.sname], function(err, result) {
+        if(err) {
+            console.log(err);
+        } else {
+            res.json(result.rows[0]);
+        }
+    })
+})
+
+router.post('/subscribe/:uid', function(req, res, next) {
+    pgClient.query('INSERT INTO subscribes(uid, sid, sname) VALUES ($1, $2, $3) RETURNING *', [req.params.uid, req.body.sid, req.body.sname], function(err, result) {
         if(err) {
             console.log(err);
         } else {
@@ -149,8 +222,8 @@ router.post('/', function(req, res, next) {
     }
     pgClient.query(queryConfig, function(err, result) {
         if(err) {
-            if(err.constraint == 'sub4ums_name_key') { //NAME IS TAKEN
-                res.json({});
+            if(err.constraint == 'sub4ums_sname_key') { //NAME IS TAKEN
+                res.status(HttpStatus.CONFLICT).json({error: errorCodes.SnameTaken});
             } else {
                 console.log(err);
             }
@@ -182,6 +255,16 @@ router.post('/', function(req, res, next) {
 
 router.delete('/subscribe', function(req, res, next) {
     pgClient.query('DELETE FROM subscribes WHERE uid=$1 AND sid=$2', [res.locals.user.uid, req.body.sid], function(err, result) {
+        if(err) {
+            console.log(err);
+        } else {
+            res.status(200).end();
+        }
+    })
+})
+
+router.delete('/requests', function(req, res, next) {
+    pgClient.query('DELETE FROM requests WHERE uid=$1 AND sid=$2', [req.body.uid, req.body.sid], function(err, result) {
         if(err) {
             console.log(err);
         } else {

@@ -23,14 +23,14 @@
         <h2>Submit link to 4UM</h2>
         <form id="postLinkForm">
             <label for="url">url</label></br>
-            <input type="text" id="url" name="postUrl" required></br>
+            <input type="url" id="url" name="postUrl" onblur="checkURL(this)" required></br>
 
             <label for="title">title</label>
             <div class="charNum">
                 <span class="current" id="current1">0</span>
                 <span class="max" id="max1">/ 300</span>
             </div>
-            <textarea type="text" id="title" name="postTitle" maxlength="300" required></textarea></br>
+            <input type="text" id="title" name="postTitle" maxlength="300" required></input></br>
 
             <label for="sname">choose a SUB4UM</label></br>
             <select id="sname" name="sname" class="SUB4UMlist" required></select>
@@ -54,7 +54,7 @@
                 <span class="current" id="current2">0</span>
                 <span class="max" id="max2">/ 300</span>
             </div>
-            <textarea type="text" id="title" name="postTitle" maxlength="300" required></textarea></br>
+            <input type="text" id="title" name="postTitle" maxlength="300" required></input></br>
 
             <label for="text">text (optional)</label>
             <div class="charNum">

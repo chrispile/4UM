@@ -9,5 +9,10 @@ module.exports = {
     ResetNotFound: {
         code: 3000,
         name: 'Reset was not found'
+    },
+    //sub4ums
+    SnameTaken: {
+        code: 4000,
+        name: 'The SUB4UM name is already taken'
     }
 }

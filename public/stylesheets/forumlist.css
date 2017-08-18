@@ -34,7 +34,11 @@ li {
     overflow: hidden;
 }
 
-.subscribe, .unsubscribe, .request {
+li a {
+    overflow: auto;
+}
+
+.subscribe, .unsubscribe, .request, .pending {
     border-radius: 4px;
     vertical-align: top;
     float: right;
@@ -70,10 +74,22 @@ li {
     background-color: #40798C;
 }
 
+.pending {
+    background-color: #f49e42;
+}
+
+.pending:hover {
+    background-color: #C88237;
+}
+
 ul {
     list-style-type: none;
 }
 
 a:hover {
     color: #356473;
+}
+
+.icon {
+    margin-left: 10px;
 }
