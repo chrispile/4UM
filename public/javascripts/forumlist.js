@@ -23,11 +23,14 @@ $(document).ready(function() {
 
     $('.modalBg').click(closeModal);
     $('.modalClose').click(closeModal);
+    $('.cancel').click(cancel);
+    $('#unsubscribeMod').click(deleteMod);
 
     $('#publicList').on('click', '.subscribe', subscribe);
-    $('#subscribedList').on('click', '.unsubscribe', unsubscribe);
+    $('#subscribedList').on('click', '.unsubscribe', unsubscribeCheck);
     $('#protectedList').on('click', '.request', request);
 
+    $('#delete').click(deleteSub4um);
 
     $('.modalContent form').on('submit', function() {
         event.preventDefault();
@@ -35,7 +38,7 @@ $(document).ready(function() {
 
     $('#modal1submit').on('click', postSUB4UM);
 
-    $('#sname').keypress(noSpaces);
+    $('#sname').keypress(onlyLettersAndNumbers);
 });
 
 var getSUB4UMS = function() {
@@ -112,36 +115,32 @@ var loadLists = function() {
 
 var alreadySubscribed = function(sname) {
     for(var i = 0; i < user4UMs.length; i++) {
-        if(user4UMs[i].sname == sname) {
+        if(user4UMs[i].sname == sname)
             return true;
-        }
     }
     return false;
 }
 
 var isAdmin = function(sid) {
     for(var i = 0; i < admin.length; i++) {
-        if(admin[i].sid == sid) {
+        if(admin[i].sid == sid)
             return true;
-        }
     }
     return false;
 }
 
 var isMod = function(sid) {
     for(var i = 0; i < mod4UMS.length; i++) {
-        if(mod4UMS[i].sid == sid) {
+        if(mod4UMS[i].sid == sid)
             return true;
-        }
     }
     return false;
 }
 
 var isPending = function(sname) {
     for(var i = 0; i < requests.length; i++) {
-        if(requests[i].sname == sname) {
+        if(requests[i].sname == sname)
             return 'pending'
-        }
     }
     return 'request'
 }
@@ -162,25 +161,57 @@ var subscribe = function(event) {
     });
 }
 
-var unsubscribe = function(event) {
+var unsubscribeCheck = function(event) {
     var li = $(this).parent();
     var sname = $(li).attr('data-sname');
     var sid = $(li).attr('data-sid');
+    var admin = $(li).attr('data-admin');
+    var mod = $(li).attr('data-mod');
+    if(admin == 'true') {
+        $('#adminUnsubscribe').show();
+        $('#modal3').prop('checked', true);
+        $('#modal3').attr('data-sname', sname);
+    } else if(mod =='true') {
+        $('#modUnsubscribe').show();
+        $('#modal3').prop('checked', true);
+        $('#modal3').attr('data-sname', sname);
+    } else {
+        unsubscribe(li, sname, sid);
+    }
+}
+
+var deleteMod = function() {
+    var sname = $('#modal3').attr('data-sname');
+    var uid = mod4UMS[0].uid
+    $.ajax({
+        url: "http://localhost:3000/sub4ums/mod/" + uid,
+        type: "DELETE",
+    }).done(function(json) {
+        var li = $("li[data-sname='" + sname + "']")
+        var sid = $(li).attr('data-sid');
+        for(var index = 0; index < mod4UMS.length; index++) {
+            if(mod4UMS[index].sid == sid)
+                mod4UMS.splice(index, 1);
+        }
+        unsubscribe(li, sname, sid);
+        cancel();
+    });
+}
+
+var unsubscribe = function(li, sname, sid) {
     $.ajax({
         url: "http://localhost:3000/sub4ums/subscribe",
         type: "DELETE",
         data: {sid: sid}
     }).done(function(json) {
         for(var index = 0; index < user4UMs.length; index++) {
-            if(user4UMs[index].sid == sid) {
+            if(user4UMs[index].sid == sid)
                 user4UMs.splice(index, 1);
-            }
         }
         var type;
         for(var index = 0; index < forumList.length; index++) {
-            if(forumList[index].sid == sid) {
+            if(forumList[index].sid == sid)
                 type = forumList[index].type;
-            }
         }
         $(li).remove();
         var newLi;
@@ -192,6 +223,21 @@ var unsubscribe = function(event) {
             newLi = createLi(sname, 'request', sid);
             protectedList.append(newLi);
         }
+    });
+}
+
+var deleteSub4um = function() {
+    var sname = $('#modal3').attr('data-sname');
+    $.ajax({
+        url: "http://localhost:3000/sub4ums/" + sname,
+        type: "DELETE",
+    }).done(function() {
+        for(var index = 0; index < user4UMs.length; index++) {
+            if(user4UMs[index].sname == sname)
+                user4UMs.splice(index, 1);
+        }
+        $("li[data-sname='" + sname + "']").remove();
+        cancel();
     });
 }
 
@@ -238,13 +284,14 @@ var createLi = function(name, type, sid) {
     $(a).attr('href','/s/' + name);
     if(adminBool) {
         var icon =  $('<i/>').addClass("fa fa-key icon").attr('aria-hidden', 'true');
+        li.attr('data-admin', 'true')
     }
     else if(modBool) {
         var icon = $('<i/>').addClass("fa fa-shield icon").attr('aria-hidden', 'true');
+        li.attr('data-mod', 'true')
     }
     $(a).html(name).append(icon);
     li.append(a)
-
     var label = $('<button/>').addClass(type).html(type);
     li.attr('data-sname', name);
     li.attr('data-sid', sid);
@@ -258,10 +305,23 @@ var closeModal = function(event) {
     $('.current').html(0);
     $('form input[type=radio]').prop('checked', false);
     $('.failDiv').remove();
+    $('.unsubscribeForm').hide();
 }
 
-var noSpaces = function(event) {
-    if(event.which == 32) return false;
+var cancel = function() {
+    $('input[type=checkbox]').prop('checked', false);
+    $('.unsubscribeForm').hide();
+}
+
+var onlyLettersAndNumbers = function(event) {
+    var ew = event.which;
+    if(48 <= ew && ew <= 57)
+        return true;
+    if(65 <= ew && ew <= 90)
+        return true;
+    if(97 <= ew && ew <= 122)
+        return true;
+    return false;
 }
 
 var request = function(event) {

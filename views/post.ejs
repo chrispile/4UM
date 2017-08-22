@@ -22,11 +22,11 @@
                         <% }  %>
                     </div>
                     <div id="tagline" data-timestamp="<%=post.timestamp%>" data-author="<%=post.username%>" data-sname="<%=post.sname%>"></div>
-                    <% if(post.text!=null) { %>
+                    <% if(post.text!=null && post.text!= '') { %>
                         <div class="text textDiv"><%=post.text%></div>
                     <% } %>
                     <ul class="postButtons">
-                        <li class="comments">0 comments</li>
+                        <li class="comments"></li>
                         <% if(canDelete) { %>
                             <li class="deleteBtn">delete</li>
                         <% } %>
@@ -35,20 +35,16 @@
             </li>
         </ol>
         <div id="commentDiv">
-            <form>
+            <form id="commentForm">
                 <div >Comment</div>
                 <textarea type="text" id="commentTextArea" name="comment" maxlength="40000"></textarea></br>
-                <input type="submit" value="save" data-sid="<%forum.sid%>">
+                <input id="submitCommentBtn" type="submit" value="save" data-pid="<%=post.pid%>">
             </form>
-            <ul id="commentList">
-                <li id="comment" class="textDiv">
-                    <div class="commentHeader"><a href="hellocuhris" class="author">hellocuhris</a> 14 hours ago</div>
-                    <div class="text" id="commentText">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus sodales, tellus quis pulvinar tempus, nibh eros ultrices metus, quis scelerisque massa ante feugiat ex. Suspendisse porttitor ante eget justo blandit dignissim ac ac turpis. Maecenas gravida quis nulla vel pretium. Proin pretium, lacus et vestibulum ullamcorper, metus leo hendrerit sem, et bibendum orci sem sed orci. Donec vel neque diam. In vitae gravida ex. Vestibulum nec quam luctus, placerat massa non, feugiat libero. Nam facilisis nisi ac consectetur interdum. Morbi ac ullamcorper ipsum, quis faucibus enim.</div>
-                </li>
-            </ul>
+            <ul id="commentList"></ul>
         </div>
     </div>
 </div>
+
 
 
 <%- include('footer', {script: "../../javascripts/post.js"}); %>

@@ -40,17 +40,17 @@ router.post('/', function(req, res, next) {
     pgClient.query(queryConfig, function(err, result) {
         if(err) {
             if(err.constraint == 'users_username_key') {
-                res.render('register', {title: 'Username taken', email:'', username:'true'}); //USERNAME IS TAKEN
+                res.status(HttpStatus.CONFLICT).render('register', {title: 'Username taken', email:'', username:'true'}); //USERNAME IS TAKEN
             }
             else if(err.constraint == 'users_email_key') {
-                res.render('register', {title: 'Email taken', email:'true', username:''}); //EMAIL IS TAKEN
+                res.status(HttpStatus.CONFLICT).render('register', {title: 'Email taken', email:'true', username:''}); //EMAIL IS TAKEN
             } else {
                 console.log(err);
             }
         }
         else {
             //SUCCESSFUL REGISTER
-            res.render('login', { title: 'Login (Success Register)', fail: ''});
+            res.status(HttpStatus.OK).render('login', { title: 'Login', fail: ''});
         }
     });
 });
@@ -61,7 +61,7 @@ router.patch('/', function(req, res, next) {
         if(err) {
             console.log(err);
         } else {
-            res.send(HttpStatus.OK);
+            res.status(HttpStatus.OK).end();
         }
     })
 })

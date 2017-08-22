@@ -4,23 +4,34 @@ var sha1 = require('../public/javascripts/sha1');
 var pgSetup = require('../pgSetup.js');
 var pgClient = pgSetup.getClient();
 var requireLogin = require('../requireLogin.js');
+var HttpStatus = require('http-status-codes')
 
 
 router.get('/',  function(req, res, next) {
-  res.render('login', { title: 'Login', fail: ''});
+  res.status(HttpStatus.OK).render('login', { title: 'Login', fail: ''});
 });
 
 router.get('/register', function(req, res, next) {
-    res.render('register', {title: 'Register', email:'', username:''});
+    res.status(HttpStatus.OK).render('register', {title: 'Register', email:'', username:''});
 })
 
 router.get('/recover', function(req, res, next) {
-    res.render('recover', {title: 'Recover', fail: ''});
+    res.status(HttpStatus.OK).render('recover', {title: 'Recover', fail: ''});
 })
 
-// router.get('/post', function(req, res, next) {
-//     res.render('post', {title:'Post'});
-// })
+router.get("/r/:token", function(req, res, next) {
+    pgClient.query("SELECT EXISTS(SELECT 1 FROM Resets WHERE token=$1)", [req.params.token], function(err, result) {
+        if(err) {
+            console.log(err);
+        } else {
+            if(result.rows[0].exists) {
+                res.status(HttpStatus.OK).render('Reset', {title: 'Reset Password Form', exists: true});
+            } else {
+                res.status(HttpStatus.NOT_FOUND).render('Reset', {title: 'Reset Password Form', exists: false});
+            }
+        }
+    })
+})
 
 router.post('/login', function(req, res, next) {
     var encryptPass = sha1.hash(req.body.password);
@@ -37,23 +48,23 @@ router.post('/login', function(req, res, next) {
                 res.render('login', { title: 'Failed login', fail:'true'});
             } else {
                 req.session.user = result.rows[0];
-                res.redirect('/home');
+                res.status(HttpStatus.OK).redirect('/home');
             }
         }
     });
 });
 
 router.get('/home', requireLogin, function(req, res, next) {
-    res.render('mainfeed', {title: 'Home'});
+    res.status(HttpStatus.OK).render('mainfeed', {title: 'Home', username: res.locals.user.username});
 });
 
 router.get('/SUB4UM', requireLogin, function(req, res, next) {
-    res.render('forumlist', {title: 'SUB4UM List'});
+    res.status(HttpStatus.OK).render('forumlist', {title: 'SUB4UM List', username: res.locals.user.username});
 });
 
 router.get('/logout', requireLogin, function(req, res) {
     req.session.reset();
-    res.redirect('/');
+    res.status(HttpStatus.OK).redirect('/');
 });
 
 router.get('/s/:sname', requireLogin, function(req, res, next) {
@@ -72,13 +83,13 @@ router.get('/s/:sname', requireLogin, function(req, res, next) {
                 var forum = result.rows[0];
                 pgClient.query('SELECT EXISTS(SELECT 1 FROM Admins WHERE uid=$1 AND sid=$2)', [res.locals.user.uid, forum.sid], function(err, result) {
                     if(result.rows[0].exists) {
-                        res.render('sub4um', {title: forum.sname, forum: forum, isAdmin: true, isMod: false});
+                        res.render('sub4um', {title: forum.sname, username: res.locals.user.username, forum: forum, isAdmin: true, isMod: false});
                     } else {
                         pgClient.query('SELECT EXISTS(SELECT 1 FROM Moderators WHERE uid=$1 AND sid=$2)', [res.locals.user.uid, forum.sid], function(err, result) {
                             if(result.rows[0].exists) {
-                                res.render('sub4um', {title: forum.sname, forum: forum, isAdmin: false, isMod: true});
+                                res.render('sub4um', {title: forum.sname, username: res.locals.user.username, forum: forum, isAdmin: false, isMod: true});
                             } else {
-                                res.render('sub4um', {title: forum.sname, forum: forum, isAdmin: false, isMod: false});
+                                res.render('sub4um', {title: forum.sname, username: res.locals.user.username, forum: forum, isAdmin: false, isMod: false});
                             }
                         })
                     }
@@ -116,9 +127,9 @@ router.get('/s/:sname/:pid', requireLogin, function(req, res, next) {
                         }
                         pgClient.query(queryConfig, function(err, result) {
                             if(result.rows[0].exists) {
-                                res.render('post', {title: post.title + ' | ' + forum.sname, forum: forum, post:post, canDelete: true});
+                                res.render('post', {title: post.title + ' | ' + forum.sname, username: res.locals.user.username, forum: forum, post:post, canDelete: true});
                             } else {
-                                res.render('post', {title:  post.title + ' | ' + forum.sname, forum, post:post, canDelete: false});
+                                res.render('post', {title:  post.title + ' | ' + forum.sname, username: res.locals.user.username, forum, post:post, canDelete: false});
                             }
                         })
                     }
@@ -127,5 +138,27 @@ router.get('/s/:sname/:pid', requireLogin, function(req, res, next) {
         }
     })
 });
+
+router.get('/u/:username', requireLogin, function(req, res, next) {
+    queryConfig = {
+        text: "SELECT * FROM users WHERE username =$1",
+        values: [req.params.username]
+    }
+    pgClient.query(queryConfig, function(err, result) {
+        if(err) {
+            console.log(err)
+        } else {
+            user = result.rows[0];
+            queryConfig.text = "SELECT COUNT(*) as totalPosts, SUM(score) as totalScore FROM posts WHERE username=$1"
+            pgClient.query(queryConfig, function(err, result) {
+                if(err) {
+                    console.log(err)
+                } else {
+                    res.render('profile', {title: req.params.username, username: res.locals.user.username, user: user, stats: result.rows[0]})
+                }
+            })
+        }
+    })
+})
 
 module.exports = router;

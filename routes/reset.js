@@ -6,21 +6,6 @@ var pgClient = pgSetup.getClient();
 var errorCodes = require('../errorCodes');
 var HttpStatus = require('http-status-codes')
 
-router.get("/r/:token", function(req, res, next) {
-    pgClient.query("SELECT EXISTS(SELECT 1 FROM Resets WHERE token=$1)", [req.params.token], function(err, result) {
-        if(err) {
-            console.log(err);
-        } else {
-            if(result.rows[0].exists) {
-                res.render('reset', {title: 'Reset Password Form', exists: true});
-            } else {
-                res.render('reset', {title: 'Reset Password Form', exists: false});
-            }
-        }
-    })
-})
-
-
 router.get("/:token", function(req, res, next) {
     pgClient.query("SELECT * FROM Resets WHERE token=$1", [req.params.token], function(err, result) {
         if(err) {
@@ -30,7 +15,7 @@ router.get("/:token", function(req, res, next) {
             if(result.rows.length == 0) {
                 res.status(HttpStatus.NOT_FOUND).json({error: errorCodes.ResetNotFound});
             } else {
-                res.json(result.rows[0]);
+                res.status(HttpStatus.OK).json(result.rows[0]);
             }
         }
     })
@@ -42,7 +27,7 @@ router.get("/", function(req, res, next) {
             console.log(err);
         }
         else {
-            res.json(result.rows);
+            res.status(HttpStatus.OK).json(result.rows);
         }
     })
 })
@@ -54,7 +39,7 @@ router.post("/", function(req, res, next) {
             console.log(err);
         } else {
             if(!result.rows[0].exists) {
-                res.render('recover', {title: 'Recover', fail: 'true'});
+                res.status(HttpStatus.NOT_FOUND).render('recover', {title: 'Recover', fail: 'true'}); //email does not exist
             } else {
                 var current_date = (new Date()).valueOf().toString();
                 var random = Math.random().toString();
@@ -66,21 +51,19 @@ router.post("/", function(req, res, next) {
                                 if(err) {
                                     console.log(err);
                                 } else {
-                                    res.render('email', { title: 'Login', resetLink: "/reset/r/" + token });
+                                    res.status(HttpStatus.OK).render('email', { title: 'Login', resetLink: "/r/" + token });
                                 }
                             });
                         } else {
                             console.log(err);
                         }
                     } else {
-                        res.render('email', { title: 'Login', resetLink: "/reset/r/" + token });
+                        res.status(HttpStatus.CREATED).render('email', { title: 'Login', resetLink: "/r/" + token });
                     }
                 })
             }
         }
     })
-
-
 })
 
 router.delete("/:token", function(req, res, next) {
@@ -88,11 +71,9 @@ router.delete("/:token", function(req, res, next) {
         if(err) {
             console.log(err);
         } else {
-            res.send(HttpStatus.OK);
+            res.status(HttpStatus.OK).end();
         }
     })
 })
-
-
 
 module.exports = router;

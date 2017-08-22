@@ -15,20 +15,26 @@ var subscribers;
 var mods;
 var forumsid;
 var userRequests;
+var urlArr
 
 $(document).ready(function() {
-    urlsname = (window.location.href).split('/').pop();
+    urlArr = (window.location.href).split('/')
+    urlsname = urlArr.pop();
 
     mainList = $('.postList');
     if(urlsname =='home') {
         getSubscribed();
         getSUB4UMS();
     } else {
-        getsid()
-        getForum();
-        $('#deleteSub4um').on('click', deleteSub4um);
-        $('#addModBtn').on('click', addMod);
-        $('#removeModBtn').on('click', removeMod);
+        if(urlArr[3] == 's') {
+            getsid()
+            getForum();
+            $('#deleteSub4um').on('click', deleteSub4um);
+            $('#addModBtn').on('click', addMod);
+            $('#removeModBtn').on('click', removeMod);
+        } else {
+            getUserPosts();
+        }
     }
 
     $('#title1').keyup({max: 300, currentID: '#current1', maxID: '#max1'}, textareaCounter);
@@ -43,7 +49,7 @@ $(document).ready(function() {
     $(mainList).on('click', '.postInfo', selectPostInfo);
     $(mainList).on('click', '.deleteBtn', deletePost);
 
-    $('.modalContent form').on('submit', function() {
+    $('.modalContent form').on('submit', function(event) {
         event.preventDefault();
     })
 
@@ -66,7 +72,6 @@ var getsid = function() {
         getSubscribers();
         getUserRequests();
     });
-
 }
 
 var getSubscribed = function() {
@@ -88,6 +93,33 @@ var getForum = function() {
     }).done(function(json) {
         subscribed = json;
         getPosts();
+    });
+}
+
+var getUserPosts = function() {
+    //get sub4ums that the logged in user is subscribed to (or the public ones)
+    $.ajax( {
+        url: "http://localhost:3000/sub4ums/options",
+        type: "GET",
+        dataType: "json"
+    }).done(function(json) {
+        var sub4ums = json;
+        var username = $('#username').html();
+        var promises = [];
+        $.each(sub4ums, function(index, forum) {
+            var sname = forum.sname;
+            var request = $.ajax({
+                url: "http://localhost:3000/posts/username/" + username + "/" + sname,
+                type: "GET",
+                dataType: "json"
+            }).done(function(json) {
+                listPosts = listPosts.concat(json);
+            });
+            promises.push(request);
+        })
+        $.when.apply(null, promises).done(function() {
+            sortScore();
+        })
     });
 }
 
@@ -149,8 +181,7 @@ var createPostElem = function(post, rank) {
     var postNum = $('<div/>').addClass('postNum').html(rank);
     var scoreDiv = $('<div/>').addClass('scoreDiv');
     var upvote =  $('<i/>').addClass("fa fa-arrow-up fa-lg upvote").attr('aria-hidden', 'true');
-    var scoreStr = createScoreString(post.score);
-    var score = $('<div/>').addClass('score').html(scoreStr).attr('data-score', post.score);;
+    var score = $('<div/>').addClass('score').html(post.score).attr('data-score', post.score);;
     var downvote =  $('<i/>').addClass("fa fa-arrow-down fa-lg downvote").attr('aria-hidden', 'true');
     scoreDiv.append(upvote).append(score).append(downvote);
     var postInfo = $('<div/>').addClass('postInfo');
@@ -165,11 +196,11 @@ var createPostElem = function(post, rank) {
     var timestamp = jQuery.timeago(new Date(post.timestamp));
     var tagline = $('<div/>').addClass('tagline').html('submitted ' + timestamp + ' by ')
     var author = $('<a />', {
-        href: post.username, //fix later
+        href: '/u/' + post.username,
         text: post.username,
     }).addClass('author');
     tagline.append(author)
-    if(urlsname == 'home') {
+    if(urlsname == 'home' || urlArr[3] == 'u') {
         var forum = $('<a />', {
             href: '/s/' + post.sname,
             text: post.sname
@@ -177,13 +208,18 @@ var createPostElem = function(post, rank) {
         tagline.append(' to ').append(forum);
     }
     var postButtons = $('<ul/>').addClass('postButtons');
-    var comments = $('<li/>').addClass('comments');
-    var commentsA = $('<a />', {
-        href: url,
-        text: "0 comments" //FIX LATER
-    })
-    comments.append(commentsA);
-    postButtons.append(comments);
+    $.ajax({
+        url: "http://localhost:3000/posts/comments/" + post.pid + "/count",
+        type: "GET",
+    }).done(function(count) {
+        var comments = $('<li/>').addClass('comments');
+        var commentsA = $('<a />', {
+            href: url,
+            text: count.count + " comments"
+        })
+        comments.append(commentsA);
+        postButtons.append(comments);
+    });
     var qualified = qualifiedToDelete(post.sname).then(function(result) {
         if(result) {
             var deleteBtn = $('<li/>').addClass('deleteBtn').html('delete');
@@ -201,14 +237,6 @@ async function qualifiedToDelete(sname) {
         type: "GET"
     })
     return json.qualified;
-}
-
-var createScoreString = function(score) {
-    if(score > 9999) {
-        var scoreStr = (score/1000).toFixed(1) + 'K';
-        return scoreStr.toString();
-    }
-    return score.toString();
 }
 
 var textareaCounter = function(event) {
@@ -244,10 +272,18 @@ var upvote = function(event) {
         value = -1;
         type="none"
     }
+    var currentScore = $(score).html();
+    var newScore = parseInt(currentScore) + value;
+    $(score).html(newScore);
     var scoreDiv = $(this).parent();
     var post = $(scoreDiv).parent();
     var pid = $(post).attr('data-pid');
-    vote(pid, value, type, score);
+    for(var index = 0; index < listPosts.length; index++) {
+        if(listPosts[index].pid == pid) {
+            listPosts[index].score = newScore;
+        }
+    }
+    vote(pid, value, type);
 }
 
 var downvote = function(event) {
@@ -271,31 +307,26 @@ var downvote = function(event) {
         value = 1
         type="none"
     }
+    var currentScore = $(score).html();
+    var newScore = parseInt(currentScore) + value
+    $(score).html(newScore);
     var scoreDiv = $(this).parent();
     var post = $(scoreDiv).parent();
     var pid = $(post).attr('data-pid');
-    vote(pid, value, type, score);
+    for(var index = 0; index < listPosts.length; index++) {
+        if(listPosts[index].pid == pid) {
+            listPosts[index].score = newScore;
+        }
+    }
+
+    vote(pid, value, type);
 }
 
-var vote = function(pid, value, type, scoreElem) {
+var vote = function(pid, value, type) {
     $.ajax({
         url: "http://localhost:3000/posts/voted/" + pid,
         type: "POST",
         data: {value: value, type: type}
-    }).done(function(json) {
-        var newScore = json.score;
-        $(scoreElem).attr('data-score', newScore);
-        $(scoreElem).html(createScoreString(newScore));
-        for(var index = 0; index < listPosts.length; index++) {
-            if(listPosts[index].pid == pid) {
-                listPosts[index].score = newScore;
-            }
-        }
-        if(sorted == 'score') {
-            sortScore();
-        } else {
-            sortDate();
-        }
     })
 }
 
@@ -539,7 +570,9 @@ var approveRequests = function(event) {
                 type: "POST",
                 data: {sid: forumsid, sname: urlsname}
             }).done(function() {
+                console.log('what');
                 $(label).remove(); //remove from user requests
+                closeModal();
             })
         })
     })

@@ -4,7 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
+var cors = require('cors');
 var pgSetup = require('./pgSetup.js');
 var environment = process.env.NODE_ENV
 if(environment == 'test') {
@@ -24,9 +24,8 @@ var sub4ums = require('./routes/sub4ums');
 var posts = require('./routes/posts')
 var reset = require('./routes/reset')
 
-
-
 var app = express();
+app.use(cors());
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -96,5 +95,7 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+
 
 module.exports = app;

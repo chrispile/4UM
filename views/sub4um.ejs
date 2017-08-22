@@ -1,6 +1,7 @@
 <%- include('header', {title: title, style: '../../stylesheets/mainfeed.css'}); %>
 
         <h3><%=forum.sname%></h3>
+        <h6><i><%=forum.type%></i></h6>
         <h6><%=forum.title%></h6>
         <p><%=forum.description%></p>
         <label id="createLinkPost" for="modal1">Submit a new link</label>
@@ -8,7 +9,7 @@
         <% if(isAdmin) { %>
             <label id="adminOptions" for="modal3">Admin Options</label>
         <% }
-        if(isAdmin || isMod) { %>
+        if(forum.type != 'public' && (isAdmin || isMod) ) { %>
             <label id="addUsers" for="modal4">Add Users</label>
         <% } %>
     </div>

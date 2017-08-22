@@ -1,0 +1,17 @@
+<%- include('header', {title: title, style: '../../stylesheets/mainfeed.css'}); %>
+
+        <h3 id="username"><%=user.username%></h3>
+        <h6>Member since <%=user.joindate%></h6>
+        <h6>Total # of Posts: <%=stats.totalposts%></h6>
+        <h6>Total score: <%=stats.totalscore%></h6>
+    </div>
+    <div id="feed">
+        <div id="sort">
+            <button class="sortBtn" id="topBtn">Top</button>
+            <button class="sortBtn" id="recentBtn">Recent</button>
+        </div>
+        <ol class="postList"></ol>
+    </div>
+</div>
+
+<%- include('footer', {script: "../../javascripts/mainfeed.js"}); %>
