@@ -30,8 +30,6 @@ var pgSetup = new function() {
         pgClient.end();
     }
     this.dropTables = function() {
-        // pgClient.query("DROP SCHEMA public CASCADE");
-        // pgClient.query("CREATE SCHEMA public");
         pgClient.query("DROP TABLE Users, SUB4UMS, Posts, Subscribes, Voted, Comments, Admins, Moderators, Resets, Requests")
         this.createTables();
     }
