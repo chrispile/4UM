@@ -1,8 +1,6 @@
 /*
 NEED TO DO
-- Requesting to join a protected SUB4UM
 - Joining a private SUB4UM through the modal
-- Having front end show the type (public, protected, private) of each of the  user's subscribed SUB4UMS
 */
 
 var forumList;
@@ -37,13 +35,14 @@ $(document).ready(function() {
     })
 
     $('#modal1submit').on('click', postSUB4UM);
+    $('#joinPrivateBtn').on('click', joinPrivate);
 
     $('#sname').keypress(onlyLettersAndNumbers);
 });
 
 var getSUB4UMS = function() {
     $.ajax( {
-        url: "http://localhost:3000/sub4ums",
+        url: "/sub4ums",
         type: "GET",
         dataType: "json"
     }).done(function(json) {
@@ -54,7 +53,7 @@ var getSUB4UMS = function() {
 
 var getSubscribed = function() {
     $.ajax( {
-        url: "http://localhost:3000/sub4ums/subscribe",
+        url: "/sub4ums/subscribe",
         type: "GET",
         dataType: "json"
     }).done(function(json) {
@@ -65,7 +64,7 @@ var getSubscribed = function() {
 
 var getAdminSub4ums = function() {
     $.ajax({
-        url: "http://localhost:3000/sub4ums/admin",
+        url: "/sub4ums/admin",
         type: "GET"
     }).done(function(json) {
         admin = json;
@@ -75,7 +74,7 @@ var getAdminSub4ums = function() {
 
 var getModSub4ums = function() {
     $.ajax({
-        url: "http://localhost:3000/sub4ums/mods",
+        url: "/sub4ums/mods",
         type: "GET"
     }).done(function(json) {
         mod4UMS = json;
@@ -85,7 +84,7 @@ var getModSub4ums = function() {
 
 var getRequests = function() {
     $.ajax( {
-        url: "http://localhost:3000/sub4ums/requests",
+        url: "/sub4ums/requests",
         type: "GET",
         dataType: "json"
     }).done(function(json) {
@@ -104,7 +103,7 @@ var loadLists = function() {
             if(forum.type == 'public') {
                 var li = createLi(forum.sname, 'subscribe', forum.sid);
                 publicList.append(li);
-            } else {
+            } if(forum.type == 'protected') {
                 var status = isPending(forum.sname)
                 var li = createLi(forum.sname, status, forum.sid);
                 protectedList.append(li);
@@ -150,7 +149,7 @@ var subscribe = function(event) {
     var sname = $(li).attr('data-sname');
     var sid= $(li).attr('data-sid');
     $.ajax({
-        url: "http://localhost:3000/sub4ums/subscribe",
+        url: "/sub4ums/subscribe",
         type: "POST",
         data: {sid: sid, sname:sname}
     }).done(function(json) {
@@ -184,7 +183,7 @@ var deleteMod = function() {
     var sname = $('#modal3').attr('data-sname');
     var uid = mod4UMS[0].uid
     $.ajax({
-        url: "http://localhost:3000/sub4ums/mod/" + uid,
+        url: "/sub4ums/mod/" + uid,
         type: "DELETE",
     }).done(function(json) {
         var li = $("li[data-sname='" + sname + "']")
@@ -200,7 +199,7 @@ var deleteMod = function() {
 
 var unsubscribe = function(li, sname, sid) {
     $.ajax({
-        url: "http://localhost:3000/sub4ums/subscribe",
+        url: "/sub4ums/subscribe",
         type: "DELETE",
         data: {sid: sid}
     }).done(function(json) {
@@ -229,7 +228,7 @@ var unsubscribe = function(li, sname, sid) {
 var deleteSub4um = function() {
     var sname = $('#modal3').attr('data-sname');
     $.ajax({
-        url: "http://localhost:3000/sub4ums/" + sname,
+        url: "/sub4ums/" + sname,
         type: "DELETE",
     }).done(function() {
         for(var index = 0; index < user4UMs.length; index++) {
@@ -253,27 +252,27 @@ var postSUB4UM = function(event) {
             sname: sname, title: title, description: description, type: type
         }
         $.ajax({
-            url: "http://localhost:3000/sub4ums",
+            url: "/sub4ums",
             type: "POST",
             data: postData
         }).done(function(arr) {
-            closeModal();
-            $('.modalState').prop('checked', false);
-            forumList.push(arr[0]);
-            admin.push(arr[1]);
-            var newLi = createLi(arr[0].sname, 'unsubscribe', arr[0].sid)
-            subscribedList.append(newLi);
-        }).fail(function (jqXHR, textStatus, error) {
-            var response = jQuery.parseJSON(jqXHR.responseText);
-            var errorDiv = $('<div/>').addClass("failDiv");
-            var exclamation = $('<i/>').addClass("fa fa-exclamation-triangle").attr('aria-hidden', 'true');
-            var message = $('<div/>').addClass("failMessage").html(response.error.name);
-            errorDiv.append(exclamation).append(message);
-
-            $('#sname').before(errorDiv);
+            if(arr.hasOwnProperty('error')) {
+                var response = arr.error.name;
+                var errorDiv = $('<div/>').addClass("failDiv");
+                var exclamation = $('<i/>').addClass("fa fa-exclamation-triangle").attr('aria-hidden', 'true');
+                var message = $('<div/>').addClass("failMessage").html(arr.error.name);
+                errorDiv.append(exclamation).append(message);
+                $('#sname').before(errorDiv);
+            } else {
+                closeModal();
+                $('.modalState').prop('checked', false);
+                forumList.push(arr[0]);
+                admin.push(arr[1]);
+                var newLi = createLi(arr[0].sname, 'unsubscribe', arr[0].sid)
+                subscribedList.append(newLi);
+            }
         });
     }
-
 }
 
 var createLi = function(name, type, sid) {
@@ -330,10 +329,34 @@ var request = function(event) {
     var sid = $(li).attr('data-sid');
     var sname = $(li).attr('data-sname');
     $.ajax({
-        url: "http://localhost:3000/sub4ums/request",
+        url: "/sub4ums/request",
         type: "POST",
         data: {sid: sid, sname: sname}
     }).done(function(json) {
         $(btn).removeClass('request').addClass('pending').html('pending');
+    });
+}
+
+var joinPrivate = function() {
+    var accesscode = $('#accessCode').val();
+    $.ajax({
+        url: "/sub4ums/subscribe/private/" + accesscode,
+        type: "POST",
+    }).done(function(json) {
+        if(json.hasOwnProperty('error')) {
+            $('.failDiv').remove();
+            var response = json.error.name;
+            var errorDiv = $('<div/>').addClass("failDiv");
+            var exclamation = $('<i/>').addClass("fa fa-exclamation-triangle").attr('aria-hidden', 'true');
+            var message = $('<div/>').addClass("failMessage").html(json.error.name);
+            errorDiv.append(exclamation).append(message);
+            console.log(errorDiv);
+            $('#accessCodeTitle').after(errorDiv);
+        } else {
+            user4UMs.push(json);
+            var newLi = createLi(json.sname, 'unsubscribe', json.sid)
+            subscribedList.append(newLi);
+            $('.modalState').prop('checked', false);
+        }
     });
 }

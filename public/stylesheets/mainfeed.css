@@ -98,20 +98,10 @@ ul {
     text-decoration: underline;
 }
 
-h3 {
-    margin: 5px 0;
-    text-align: center;
-}
-
 .charNum {
     display: inline;
     font-size: 18px;
     float: right;
-}
-
-h6, p {
-    margin: 14px 6px;
-    text-align: center;
 }
 
 #sort {
@@ -138,7 +128,6 @@ h6, p {
 #userRequestsList label {
     display: block;
 }
-
 
 .text {
     white-space: pre-wrap;

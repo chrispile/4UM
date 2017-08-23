@@ -27,6 +27,20 @@ header {
     z-index: 999;
 }
 
+h3 {
+    margin: 5px 0;
+    text-align: center;
+}
+
+h6, #sideMenu p {
+    margin: 14px 6px;
+    text-align: center;
+}
+
+ul {
+    list-style-type: none;
+}
+
 #headerLogo {
     font-weight: 700;
     padding: 0 15px;
@@ -63,7 +77,6 @@ header {
     padding-top: 15px;
 }
 
-
 #sideMenu label {
     display: block;
     font-size: 22px;
@@ -81,6 +94,15 @@ header {
 #sideMenu label:hover {
     background-color: #458296;
     cursor: pointer;
+}
+
+#sideMenu p, #sideMenu h4 {
+    margin: 12px 10px;
+    text-align: center;
+}
+
+#sideMenu p {
+    font-size: 14px;
 }
 
 .modal {
@@ -135,11 +157,11 @@ header {
     height: 50%;
 }
 
-.modalContent2 {
+.modalContent2, .addUsersContent  {
     height: 25%;
 }
 
-.modalContent3 {
+.modalContent3, {
     height: 20%;
 }
 
@@ -162,6 +184,10 @@ form input[type=url], form input[type=text], textarea, #removeModSelect, #addMod
     margin-bottom: 16px;
     resize: vertical;
     font-family: Helvetica;
+}
+
+#textAreaPost {
+    height: 150px;
 }
 
 .modalClose {
@@ -225,11 +251,11 @@ select option:hover {
     margin: 10px 0;
 }
 
-#removeModBtn, .cancel {
+#removeModBtn, #cancel {
     background-color: #F0523D;
 }
 
-#removeModBtn:hover, #deleteSub4um:hover, .cancel:hover {
+#removeModBtn:hover, #deleteSub4um:hover, #cancel:hover {
     background-color: #993527;
 }
 
@@ -246,4 +272,32 @@ select option:hover {
 
 .unsubscribeForm {
     display: none;
+}
+
+#noUser, #snameTaken {
+    color: #F0523D;
+    margin-bottom: 10px;
+    font-size: 14px;
+    display: none;
+}
+
+
+#noMessages {
+    text-align: center;
+    position: absolute;
+    display: none;
+    width: 1200px;
+    font-size: 30px;
+    color: #6d6d6d;
+}
+
+#noPosts {
+    text-align: center;
+    position: absolute;
+    margin-top: 10px;
+    display: none;
+    width: 950px;
+    height: 200px;
+    font-size: 30px;
+    color: #6d6d6d;
 }

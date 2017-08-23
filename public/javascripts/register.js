@@ -7,6 +7,11 @@ $(function() {
 	});
 
 	$('#resetBtn').click(resetPass);
+
+	$('form input').keypress(function(e) {
+        if (e.which == 32)
+            return false;
+    });
 });
 
 
@@ -19,30 +24,31 @@ function matchPassword(input) {
 }
 
 var resetPass = function() {
-	var newpassword = $('#password1').val();
-	var email;
-	$.ajax({
-		url: "http://localhost:3000/reset/" + token,
-		type: "GET"
-	}).done(function(json) {
-		email = json.email;
+	if($('#resetForm')[0].checkValidity()) {
+
+		var newpassword = $('#password1').val();
+		var email;
 		$.ajax({
-			url: "http://localhost:3000/users/",
-			data: {
-				'email': email,
-				'password': newpassword
-			},
-			type: "PATCH"
-		}).done(function() {
-			console.log('patched user passsword!');
+			url: "/reset/" + token,
+			type: "GET"
+		}).done(function(json) {
+			email = json.email;
 			$.ajax({
-				url: "http://localhost:3000/reset/" + token,
-				type: "DELETE"
+				url: "/users/",
+				data: {
+					'email': email,
+					'password': newpassword
+				},
+				type: "PATCH"
 			}).done(function() {
-				console.log('deleted reset object!');
-				$('#recover').toggle();
-				$('#success').toggle();
-			})
+				$.ajax({
+					url: "/reset/" + token,
+					type: "DELETE"
+				}).done(function() {
+					$('#recover').toggle();
+					$('#success').toggle();
+				})
+			});
 		});
-	});
+	}
 }

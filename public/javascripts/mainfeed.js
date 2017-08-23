@@ -1,9 +1,3 @@
-/*
-NEED TO TO
-- Posts need to direct user to new page
-- Usernames on posts need to direct to new pages
-*/
-
 var listPosts = [];
 var mainList;
 var voted;
@@ -16,8 +10,9 @@ var mods;
 var forumsid;
 var userRequests;
 var urlArr
-
+var socket;
 $(document).ready(function() {
+    socket = io();
     urlArr = (window.location.href).split('/')
     urlsname = urlArr.pop();
 
@@ -56,6 +51,7 @@ $(document).ready(function() {
     $('#modal1submit').on('click', postPost);
     $('#modal2submit').on('click', postPost);
     $('#approveUsersBtn').on('click', approveRequests);
+    $('#inviteBtn').on('click', inviteUser);
 
     $('#topBtn').on('click', sortScore);
     $('#recentBtn').on('click', sortDate);
@@ -63,7 +59,7 @@ $(document).ready(function() {
 
 var getsid = function() {
     $.ajax( {
-        url: "http://localhost:3000/sub4ums/sname/" + urlsname,
+        url: "/sub4ums/sname/" + urlsname,
         type: "GET",
         dataType: "json"
     }).done(function(json) {
@@ -76,7 +72,7 @@ var getsid = function() {
 
 var getSubscribed = function() {
     $.ajax( {
-        url: "http://localhost:3000/sub4ums/subscribe",
+        url: "/sub4ums/subscribe",
         type: "GET",
         dataType: "json"
     }).done(function(json) {
@@ -87,7 +83,7 @@ var getSubscribed = function() {
 
 var getForum = function() {
     $.ajax( {
-        url: "http://localhost:3000/sub4ums/sname/" + urlsname,
+        url: "/sub4ums/sname/" + urlsname,
         type: "GET",
         dataType: "json"
     }).done(function(json) {
@@ -99,7 +95,7 @@ var getForum = function() {
 var getUserPosts = function() {
     //get sub4ums that the logged in user is subscribed to (or the public ones)
     $.ajax( {
-        url: "http://localhost:3000/sub4ums/options",
+        url: "/sub4ums/options",
         type: "GET",
         dataType: "json"
     }).done(function(json) {
@@ -109,7 +105,7 @@ var getUserPosts = function() {
         $.each(sub4ums, function(index, forum) {
             var sname = forum.sname;
             var request = $.ajax({
-                url: "http://localhost:3000/posts/username/" + username + "/" + sname,
+                url: "/posts/username/" + username + "/" + sname,
                 type: "GET",
                 dataType: "json"
             }).done(function(json) {
@@ -118,7 +114,11 @@ var getUserPosts = function() {
             promises.push(request);
         })
         $.when.apply(null, promises).done(function() {
-            sortScore();
+            if(listPosts.length == 0) {
+                $('#noPosts').show();
+            } else {
+                sortScore();
+            }
         })
     });
 }
@@ -128,7 +128,7 @@ var getPosts = function() {
     $.each(subscribed, function(index, forum) {
         var sname = forum.sname;
         var request = $.ajax({
-            url: "http://localhost:3000/posts/" + sname,
+            url: "/posts/" + sname,
             type: "GET",
             dataType: "json"
         }).done(function(json) {
@@ -137,7 +137,11 @@ var getPosts = function() {
         promises.push(request);
     })
     $.when.apply(null, promises).done(function() {
-        sortScore();
+        if(listPosts.length == 0) {
+            $('#noPosts').show();
+        } else {
+            sortScore();
+        }
     })
 }
 
@@ -152,7 +156,7 @@ var loadList = function() {
 
 var getVoted = function() {
     $.ajax( {
-        url: "http://localhost:3000/posts/voted/",
+        url: "/posts/voted/",
         type: "GET",
         dataType: "json"
     }).done(function(json) {
@@ -209,7 +213,7 @@ var createPostElem = function(post, rank) {
     }
     var postButtons = $('<ul/>').addClass('postButtons');
     $.ajax({
-        url: "http://localhost:3000/posts/comments/" + post.pid + "/count",
+        url: "/posts/comments/" + post.pid + "/count",
         type: "GET",
     }).done(function(count) {
         var comments = $('<li/>').addClass('comments');
@@ -233,7 +237,7 @@ var createPostElem = function(post, rank) {
 
 async function qualifiedToDelete(sname) {
     var json = await $.ajax({
-        url: "http://localhost:3000/sub4ums/qualified/" + sname,
+        url: "/sub4ums/qualified/" + sname,
         type: "GET"
     })
     return json.qualified;
@@ -318,13 +322,12 @@ var downvote = function(event) {
             listPosts[index].score = newScore;
         }
     }
-
     vote(pid, value, type);
 }
 
 var vote = function(pid, value, type) {
     $.ajax({
-        url: "http://localhost:3000/posts/voted/" + pid,
+        url: "/posts/voted/" + pid,
         type: "POST",
         data: {value: value, type: type}
     })
@@ -353,7 +356,7 @@ var postPost = function(event) {
             postData.text = $(form).find('#text').val();
         }
         $.ajax({
-            url: "http://localhost:3000/posts/" + sname,
+            url: "/posts/" + sname,
             type: "POST",
             data: postData
         }).done(function(json) {
@@ -363,6 +366,7 @@ var postPost = function(event) {
             } else {
                 sortScore();
             }
+            $('#noPosts').hide();
             closeModal();
             $('.modalState').prop('checked', false);
         });
@@ -371,7 +375,7 @@ var postPost = function(event) {
 
 var getSUB4UMS = function() {
     $.ajax( {
-        url: "http://localhost:3000/sub4ums/options",
+        url: "/sub4ums/options",
         type: "GET",
         dataType: "json"
     }).done(function(json) {
@@ -422,14 +426,14 @@ var sortScore = function() {
 
 var deleteSub4um = function() {
     $.ajax({
-        url: "http://localhost:3000/sub4ums/" + urlsname,
+        url: "/sub4ums/" + urlsname,
         type: "DELETE",
     })
 }
 
 var getSubscribers = function() {
     $.ajax( {
-        url: "http://localhost:3000/sub4ums/subscribers/" + forumsid,
+        url: "/sub4ums/subscribers/" + forumsid,
         type: "GET",
     }).done(function(json) {
         subscribers = json;
@@ -439,16 +443,8 @@ var getSubscribers = function() {
 
 var addSubscribersOptions = function() {
     $.each(subscribers, function(index, subscriber) {
-        var uid = subscriber.uid;
-        $.ajax({
-            url: "http://localhost:3000/users/" + uid,
-            type: "GET",
-            dataType: "json"
-        }).done(function(json) {
-            var username = json.username;
-            var option = $('<option/>').html(username).attr('value', username).attr('data-uid', subscriber.uid);
-            $('#addModSelect').append(option);
-        })
+        var option = $('<option/>').html(subscriber.username).attr('value', subscriber.username).attr('data-uid', subscriber.uid);
+        $('#addModSelect').append(option);
     })
 }
 
@@ -456,7 +452,7 @@ var addMod = function() {
     var uid = $('#addModSelect option:selected').attr('data-uid');
     var username = $('#addModSelect option:selected').val();
     $.ajax({
-        url: "http://localhost:3000/sub4ums/mod",
+        url: "/sub4ums/mod",
         type: "POST",
         data: {uid: uid, sid: forumsid}
     }).done(function(json) {
@@ -468,7 +464,7 @@ var addMod = function() {
 
 var getMods = function(sid) {
     $.ajax( {
-        url: "http://localhost:3000/sub4ums/mods/" + sid,
+        url: "/sub4ums/mods/" + sid,
         type: "GET",
     }).done(function(json) {
         mods = json;
@@ -478,16 +474,8 @@ var getMods = function(sid) {
 
 var addModOptions = function() {
     $.each(mods, function(index, mod) {
-        var uid = mod.uid;
-        $.ajax({
-            url: "http://localhost:3000/users/" + uid,
-            type: "GET",
-            dataType: "json"
-        }).done(function(json) {
-            var username = json.username;
-            var option = $('<option/>').html(username).attr('value', username).attr('data-uid', uid);
-            $('#removeModSelect').append(option);
-        })
+        var option = $('<option/>').html(mod.username).attr('value', mod.username).attr('data-uid',mod.uid);
+        $('#removeModSelect').append(option);
     })
 }
 
@@ -495,7 +483,7 @@ var removeMod = function() {
     var uid = $('#removeModSelect option:selected').attr('data-uid');
     var username = $('#removeModSelect option:selected').val();
     $.ajax({
-        url: "http://localhost:3000/sub4ums/mod/" + uid,
+        url: "/sub4ums/mod/" + uid,
         type: "DELETE",
     }).done(function(json) {
         $('#removeModSelect option:selected').remove();
@@ -513,12 +501,11 @@ var checkURL = function() {
     return url
 }
 
-
 var deletePost = function(event) {
     var post = $(this).parentsUntil($('ol .postList'), '.post')[0];
     var pid = $(post).attr('data-pid');
     $.ajax({
-        url: "http://localhost:3000/posts",
+        url: "/posts",
         type: "DELETE",
         data: {pid: pid}
     }).done(function() {
@@ -533,24 +520,18 @@ var deletePost = function(event) {
 
 var getUserRequests = function() {
     $.ajax({
-        url: "http://localhost:3000/sub4ums/requests/" + forumsid,
+        url: "/sub4ums/requests/" + forumsid,
         type: "GET",
         dataType: "json"
     }).done(function(json) {
         userRequests = json;
         $.each(userRequests, function(i, request) {
             var uid = request.uid;
-            $.ajax({
-                url: "http://localhost:3000/users/" + uid,
-                type: "GET",
-                dataType: "json"
-            }).done(function(json) {
-                var username = json.username;
-                var input = $('<input>').attr({type: 'checkbox', name: 'username', value: username});
-                var inputStr = "<input type='checkbox' name='username' value='" + username + "' data-uid='" + uid + "'>";
-                var label = $('<label/>').html(inputStr + " " + username);
-                $(label).appendTo('#userRequestsList')
-            });
+            var username = request.username;
+            var input = $('<input>').attr({type: 'checkbox', name: 'username', value: username});
+            var inputStr = "<input type='checkbox' name='username' value='" + username + "' data-uid='" + uid + "'>";
+            var label = $('<label/>').html(inputStr + " " + username);
+            $(label).appendTo('#userRequestsList')
         });
     })
 }
@@ -561,19 +542,37 @@ var approveRequests = function(event) {
         var uid = $(this).attr('data-uid');
         var label = $(this).parent();
         $.ajax({ //remove from requests
-            url: "http://localhost:3000/sub4ums/requests",
+            url: "/sub4ums/requests/" + uid + "/" + forumsid,
             type: "DELETE",
-            data: {uid:uid, sid: forumsid}
+            data: {sname: urlsname}
         }).done(function() {
-            $.ajax({ //add to subscribers
-                url: "http://localhost:3000/sub4ums/subscribe/" + uid,
-                type: "POST",
-                data: {sid: forumsid, sname: urlsname}
-            }).done(function() {
-                console.log('what');
-                $(label).remove(); //remove from user requests
-                closeModal();
-            })
+            $(label).remove();
+            closeModal();
         })
     })
+}
+
+var inviteUser = function(event) {
+    var form = $(this).parent();
+    if($(form)[0].checkValidity()) {
+        var toUser = $('#inviteUsername').val();
+        var accesscode = $('#inviteAccessCode').val();
+        var title = 'PRIVATE SUB4UM INVITE'
+        var sname = $(this).attr('data-sname');
+        var message = 'Hello, you have been invited to join the SUB4UM: ' + sname + '. To accept the invite, use the following access code: ' + accesscode;
+        $.ajax({
+            url: "/messages",
+            data: {toUser: toUser, title: title, message: message},
+            type: "POST"
+        }).done(function(result) {
+            console.log(result);
+            if(result.hasOwnProperty('error')) {
+                $('#noUser').show();
+            } else {
+                $('.modalState').prop('checked', false);
+                closeModal();
+                socket.emit('addMessage', result);
+            }
+        });
+    }
 }

@@ -15,10 +15,7 @@ var agent = chai.request.agent(server)
 describe('Users', function() {
     before(function() {
         pgSetup.dropTables();
-    })
-    after(function() {
-        pgSetup.dropTables();
-    })
+    });
     it('GET / should return empty JSON', function(done) {
         agent.get('/users')
         .end(function(err, res) {

@@ -15,7 +15,7 @@ router.get("/:token", function(req, res, next) {
             if(result.rows.length == 0) {
                 res.status(HttpStatus.NOT_FOUND).json({error: errorCodes.ResetNotFound});
             } else {
-                res.status(HttpStatus.OK).json(result.rows[0]);
+                res.json(result.rows[0]);
             }
         }
     })
@@ -27,7 +27,7 @@ router.get("/", function(req, res, next) {
             console.log(err);
         }
         else {
-            res.status(HttpStatus.OK).json(result.rows);
+            res.json(result.rows);
         }
     })
 })
@@ -51,7 +51,7 @@ router.post("/", function(req, res, next) {
                                 if(err) {
                                     console.log(err);
                                 } else {
-                                    res.status(HttpStatus.OK).render('email', { title: 'Login', resetLink: "/r/" + token });
+                                    res.render('email', { title: 'Login', resetLink: "/r/" + token });
                                 }
                             });
                         } else {
@@ -71,7 +71,7 @@ router.delete("/:token", function(req, res, next) {
         if(err) {
             console.log(err);
         } else {
-            res.status(HttpStatus.OK).end();
+            res.sendStatus(HttpStatus.OK);
         }
     })
 })

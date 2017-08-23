@@ -1,6 +1,11 @@
 <%- include('header', {title: title, style: 'stylesheets/forumlist.css'}); %>
 
         <h3>SUB4UMs</h3>
+        <h4>Welcome to the SUB4UM list.</h4>
+        <p>Any user is open to join public SUB4UMS.</p>
+        <p>Protected SUB4UMs must be requested to join and approved by an Admin<i class="fa fa-key icon" aria-hidden="true"></i> or Moderator<i class="fa fa-shield icon" aria-hidden="true"></i>.</p>
+        <p>Private SUB4UMs are not visible on this page. To join, you must receive a unique access code or direct invite from your inbox.</p>
+        <p>Users can even start their own SUB4UM and become the Admin<i class="fa fa-key icon" aria-hidden="true"></i>.</p>
         <label id="createForum" for="modal1">Create your own</label>
         <label id="createForum" for="modal2">Join a private SUB4UM</label>
     </div>
@@ -68,10 +73,9 @@
         </label>
         <h2>Join a private SUB4UM</h2>
         <form id="SUB4UMForm">
-            <label for="name2UM">Access Code</label>
-            <input type="text" id="name2UM" name="name" maxlength="100" required/>
-
-            <input type="submit" value="submit">
+            <label id="accessCodeTitle" for="name2UM">Access Code</label>
+            <input type="text" id="accessCode" name="name" maxlength="10" required/>
+            <input id="joinPrivateBtn" type="submit" value="submit">
         </form>
     </div>
 </div>
@@ -87,13 +91,13 @@
             <h2>Are you sure?</h2>
             <p>Since you own the SUB4UM, unsubscribing will delete the SUB4UM.</p>
             <input id="delete" type="submit" value="Unsubscribe & Delete">
-            <input class="cancel" type="submit" value="Cancel">
+            <input id="cancel" type="submit" value="Cancel">
         </form>
         <form class="unsubscribeForm" id="modUnsubscribe">
             <h2>Are you sure?</h2>
             <p>Since you are a mod, unsubscribing will remove you as a mod.</p>
             <input id="unsubscribeMod" type="submit" value="Unsubscribe">
-            <input class="cancel" type="submit" value="Cancel">
+            <input id="cancel" type="submit" value="Cancel">
         </form>
     </div>
 </div>

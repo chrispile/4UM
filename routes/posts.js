@@ -45,7 +45,11 @@ router.post('/voted/:pid', function(req, res, next) {
 //COMMENTS
 
 router.get('/comments/:pid', function(req, res, next) {
-    pgClient.query("SELECT * FROM comments WHERE pid=$1 ORDER BY timestamp", [req.params.pid], function(err, result) {
+    var queryConfig = {
+        text: "SELECT comments.cid, text, comments.timestamp, users.username as username FROM comments LEFT JOIN users ON comments.uid=users.uid WHERE pid=$1 ORDER BY timestamp",
+        values: [req.params.pid]
+    }
+    pgClient.query(queryConfig, function(err, result) {
         if(err) {
             console.log(err);
         } else {
@@ -73,7 +77,11 @@ router.post('/comments/:pid', function(req, res, next) {
         if(err) {
             console.log(err);
         } else {
-            res.json(result.rows[0]);
+            var comment = result.rows[0];
+            delete comment.uid;
+            delete comment.pid;
+            comment.username = res.locals.user.username;
+            res.json(comment);
         }
     });
 })

@@ -3,20 +3,20 @@ var router = express.Router();
 var sha1 = require('../public/javascripts/sha1');
 var pgSetup = require('../pgSetup.js');
 var pgClient = pgSetup.getClient();
-var requireLogin = require('../requireLogin.js');
+var requireLogin = require('../requireLogin');
 var HttpStatus = require('http-status-codes')
 
 
 router.get('/',  function(req, res, next) {
-  res.status(HttpStatus.OK).render('login', { title: 'Login', fail: ''});
+  res.render('login', { title: 'Login', fail: ''});
 });
 
 router.get('/register', function(req, res, next) {
-    res.status(HttpStatus.OK).render('register', {title: 'Register', email:'', username:''});
+    res.render('register', {title: 'Register', email:'', username:''});
 })
 
 router.get('/recover', function(req, res, next) {
-    res.status(HttpStatus.OK).render('recover', {title: 'Recover', fail: ''});
+    res.render('recover', {title: 'Recover', fail: ''});
 })
 
 router.get("/r/:token", function(req, res, next) {
@@ -25,9 +25,9 @@ router.get("/r/:token", function(req, res, next) {
             console.log(err);
         } else {
             if(result.rows[0].exists) {
-                res.status(HttpStatus.OK).render('Reset', {title: 'Reset Password Form', exists: true});
+                res.render('Reset', {title: 'Reset Password Form', exists: true});
             } else {
-                res.status(HttpStatus.NOT_FOUND).render('Reset', {title: 'Reset Password Form', exists: false});
+                res.render('Reset', {title: 'Reset Password Form', exists: false});
             }
         }
     })
@@ -48,23 +48,27 @@ router.post('/login', function(req, res, next) {
                 res.render('login', { title: 'Failed login', fail:'true'});
             } else {
                 req.session.user = result.rows[0];
-                res.status(HttpStatus.OK).redirect('/home');
+                res.redirect('/home');
             }
         }
     });
 });
 
 router.get('/home', requireLogin, function(req, res, next) {
-    res.status(HttpStatus.OK).render('mainfeed', {title: 'Home', username: res.locals.user.username});
+    res.render('mainfeed', {title: 'Home', username: res.locals.user.username});
 });
 
+router.get('/inbox', requireLogin, function(req, res, next) {
+    res.render('inbox', {title: 'Inbox', username: res.locals.user.username})
+})
+
 router.get('/SUB4UM', requireLogin, function(req, res, next) {
-    res.status(HttpStatus.OK).render('forumlist', {title: 'SUB4UM List', username: res.locals.user.username});
+    res.render('forumlist', {title: 'SUB4UM List', username: res.locals.user.username});
 });
 
 router.get('/logout', requireLogin, function(req, res) {
     req.session.reset();
-    res.status(HttpStatus.OK).redirect('/');
+    res.redirect('/');
 });
 
 router.get('/s/:sname', requireLogin, function(req, res, next) {
@@ -98,7 +102,6 @@ router.get('/s/:sname', requireLogin, function(req, res, next) {
         }
     })
 })
-
 
 router.get('/s/:sname/:pid', requireLogin, function(req, res, next) {
     //check if sname is public, if not then check if user is subscribed

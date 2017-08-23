@@ -9,7 +9,9 @@
             <button class="sortBtn" id="topBtn">Top</button>
             <button class="sortBtn" id="recentBtn">Recent</button>
         </div>
-        <ol class="postList"></ol>
+        <div id="noPosts">There are no posts to display. Subscribe to more SUB4UMs or create your own post!</div>
+        <ol class="postList">
+        </ol>
     </div>
 </div>
 
@@ -62,7 +64,7 @@
                 <span class="max" id="max3">/ 40000</span>
             </div>
 
-            <textarea type="text" id="text" name="postText" maxlength="40000"></textarea></br>
+            <textarea type="text" id="textAreaPost" name="postText" maxlength="40000"></textarea></br>
 
             <label for="sname">choose a SUB4UM</label></br>
             <select id="sname" name="sname" class="SUB4UMlist" required></select>

@@ -50,7 +50,7 @@ router.post('/', function(req, res, next) {
         }
         else {
             //SUCCESSFUL REGISTER
-            res.status(HttpStatus.OK).render('login', { title: 'Login', fail: ''});
+            res.render('login', { title: 'Login', fail: ''});
         }
     });
 });
@@ -61,7 +61,7 @@ router.patch('/', function(req, res, next) {
         if(err) {
             console.log(err);
         } else {
-            res.status(HttpStatus.OK).end();
+            res.sendStatus(HttpStatus.OK);
         }
     })
 })

@@ -18,6 +18,7 @@
             <button class="sortBtn" id="topBtn">Top</button>
             <button class="sortBtn" id="recentBtn">Recent</button>
         </div>
+        <div id="noPosts">The SUB4UM has no posts to display. Create own post and be the first!</div>
         <ol class="postList"></ol>
     </div>
 </div>
@@ -68,7 +69,7 @@
                 <span class="max" id="max3">/ 40000</span>
             </div>
 
-            <textarea type="text" id="text" name="postText" maxlength="40000"></textarea></br>
+            <textarea type="text" id="textAreaPost" name="postText" maxlength="40000"></textarea></br>
 
             <input type="submit" value="submit" id="modal2submit">
         </form>
@@ -83,7 +84,7 @@
             <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
         </label>
         <h2>Admin Options</h2>
-
+        <h5>Moderators will be able to delete user posts in the SUB4UM. They also can invite and accept user requests. You can add or remove any current subscribers as a Moderator.</h5>
         <form id="addMods">
             <label for="username">Add Moderator</label>
             <select id="addModSelect" name="username" required></select>
@@ -103,29 +104,26 @@
 <input class="modalState" id="modal4" type="checkbox"/>
 <div class="modal">
     <label class="modalBg" for="modal4"></label>
-    <div class="modalContent">
+    <div class="modalContent addUsersContent">
         <label for="modal4">
             <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
         </label>
         <h2>Add Users</h2>
-
-        <!--Only show this option if the SUB4UM is protected-->
+        <% if(forum.type == 'protected') { %>
         <form id="userRequests">
             <label for="username">Pending User Requests</label>
             <ul id="userRequestsList"></ul>
             <input type="submit" value="Approve" id="approveUsersBtn">
         </form>
-
-        <!--
-        TODO:
-            Send mail to user
-            Check if username exists before sending
-        -->
-        <form id="removeMods">
+        <% } if(forum.type=='private') { %>
+        <form id="inviteUsers">
             <label for="username">Enter username to invite:</label>
-            <input type="text" name="username" required></input>
-            <input type="submit" value="Invite" id="inviteBtn">
+            <input type="hidden" id="inviteAccessCode" name="accesscode" value="<%=forum.accesscode%>">
+            <input type="text" id="inviteUsername" name="username" required></input>
+            <div id="noUser">There is no one registered with that username.</div>
+            <input type="submit" value="Invite" id="inviteBtn" data-sname=<%=forum.sname%>>
         </form>
+        <% } %>
     </div>
 </div>
 

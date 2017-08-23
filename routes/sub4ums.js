@@ -8,9 +8,13 @@ var HttpStatus = require('http-status-codes')
 
 //SUBSCRIBES
 
-    // Returns all subscribers to a SUB4UM except if the logged in user is a moderator for that SUB4UM [CONFIRMED] 
+    // Returns all subscribers to a SUB4UM except if the logged in user is a moderator for that SUB4UM [CONFIRMED]
 router.get('/subscribers/:sid', function(req, res, next) {
-    pgClient.query('SELECT * FROM subscribes WHERE sid=$1 AND uid!=$2 AND uid NOT IN (SELECT uid FROM moderators where sid=$1)', [req.params.sid, res.locals.user.uid], function(err, result) {
+    queryConfig = {
+        text: "SELECT users.uid, sid, sname, username FROM subscribes LEFT JOIN users on subscribes.uid = users.uid WHERE sid=$1 AND subscribes.uid!=$2 AND subscribes.uid NOT IN (SELECT uid FROM moderators where sid=$1)",
+        values: [req.params.sid, res.locals.user.uid]
+    }
+    pgClient.query(queryConfig, function(err, result) {
         if(err) {
             console.log(err)
         } else {
@@ -29,6 +33,34 @@ router.get('/subscribe', function(req, res, next) {
         }
     })
 })
+
+router.post('/subscribe/private/:accesscode', function(req, res, next) {
+    pgClient.query("SELECT sid, sname FROM sub4ums WHERE accesscode=$1", [req.params.accesscode], function(err, result) {
+        if(err) {
+            console.log(err)
+        } else {
+            if(result.rows.length == 0) {
+                res.json({error:errorCodes.AccessCodeDoesNotExist}).status(HttpStatus.NOT_FOUND);
+                console.log('what');
+            } else {
+                var sid = result.rows[0].sid;
+                var sname = result.rows[0].sname;
+                pgClient.query('INSERT INTO subscribes(uid, sid, sname) VALUES ($1, $2, $3) RETURNING *', [res.locals.user.uid, sid, sname], function(err, result) {
+                    if(err) {
+                        if(err.constraint == 'subscribes_pkey') {
+                            console.log('what');
+                            res.json({error: errorCodes.AlreadySubscribed}).status(HttpStatus.CONFLICT);
+                        } else {
+                            console.log(err);
+                        }
+                    } else {
+                        res.json(result.rows[0]);
+                    }
+                });
+            }
+        }
+    })
+});
 
     //Used to confirm a pending request by subscribing a user to a sub4um [CONFIRMED]
 router.post('/subscribe/:uid', function(req, res, next) {
@@ -58,7 +90,7 @@ router.delete('/subscribe', function(req, res, next) {
         if(err) {
             console.log(err);
         } else {
-            res.status(200).end();
+            res.sendStatus(HttpStatus.OK);
         }
     })
 })
@@ -92,7 +124,7 @@ router.get('/mods', function(req, res, next) {
 
     //Returns all moderators for one SUB4UM by sid. [CONFIRMED]
 router.get('/mods/:sid', function(req, res, next) {
-    pgClient.query("SELECT * FROM Moderators WHERE sid=$1", [req.params.sid], function(err, result) {
+    pgClient.query("SELECT Users.uid, sid, username FROM Moderators LEFT JOIN Users ON Moderators.uid = Users.uid WHERE sid=$1", [req.params.sid], function(err, result) {
         if(err) {
             console.log(err);
         } else {
@@ -119,7 +151,7 @@ router.delete('/mod/:uid', function(req, res, next) {
         if(err) {
             console.log(err);
         } else {
-            res.status(HttpStatus.OK).end();
+            res.sendStatus(HttpStatus.OK);
         }
     })
 })
@@ -128,7 +160,7 @@ router.delete('/mod/:uid', function(req, res, next) {
 
     // Gets all requests for a sub4um [CONFIRMED]
 router.get('/requests/:sid', function(req, res, next) {
-    pgClient.query('SELECT * FROM requests WHERE sid=$1', [req.params.sid], function(err, result) {
+    pgClient.query('SELECT sid, sname, Users.uid, username FROM Requests LEFT JOIN Users ON Requests.uid=Users.uid WHERE sid=$1', [req.params.sid], function(err, result) {
         if(err) {
             console.log(err)
         } else {
@@ -160,12 +192,18 @@ router.post('/request', function(req, res, next) {
 })
 
     // [CONFIRMED]
-router.delete('/requests', function(req, res, next) {
-    pgClient.query('DELETE FROM requests WHERE uid=$1 AND sid=$2', [req.body.uid, req.body.sid], function(err, result) {
+router.delete('/requests/:uid/:sid', function(req, res, next) {
+    pgClient.query('DELETE FROM requests WHERE uid=$1 AND sid=$2', [req.params.uid, req.params.sid], function(err, result) {
         if(err) {
             console.log(err);
         } else {
-            res.status(HttpStatus.OK).end();
+            pgClient.query('INSERT INTO subscribes(uid, sid, sname) VALUES ($1, $2, $3) RETURNING *', [req.params.uid, req.params.sid, req.body.sname], function(err, result) {
+                if(err) {
+                    console.log(err);
+                } else {
+                    res.sendStatus(HttpStatus.OK);
+                }
+            })
         }
     })
 })
@@ -230,14 +268,19 @@ router.get('/', function(req, res, next) {
 
     // Posts new SUB4UM [CONFIRMED]
 router.post('/', function(req, res, next) {
+    if(req.body.type == 'private') {
+        var accesscode = '';
+        var chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        for (var i = 8; i > 0; --i) accesscode += chars[Math.round(Math.random() * (chars.length - 1))];
+    }
     var queryConfig = {
-        text: "INSERT INTO sub4ums(sname, title, description, type) VALUES ($1, $2, $3, $4) RETURNING *",
-        values: [req.body.sname, req.body.title, req.body.description, req.body.type]
+        text: "INSERT INTO sub4ums(sname, title, description, type, accesscode) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+        values: [req.body.sname, req.body.title, req.body.description, req.body.type, accesscode]
     }
     pgClient.query(queryConfig, function(err, result) {
         if(err) {
             if(err.constraint == 'sub4ums_sname_key') { //NAME IS TAKEN
-                res.status(HttpStatus.CONFLICT).json({error: errorCodes.SnameTaken});
+                res.json({error: errorCodes.SnameTaken});
             } else {
                 console.log(err);
             }
@@ -272,7 +315,7 @@ router.delete('/:sname', function(req, res, next) {
         if(err) {
             console.log(err);
         } else {
-            res.status(HttpStatus.OK).end();
+            res.sendStatus(HttpStatus.OK);
         }
     })
 })

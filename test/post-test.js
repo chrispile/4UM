@@ -300,8 +300,6 @@ describe('Posts', function() {
                 res.should.have.status(HttpStatus.OK);
                 res.should.be.json;
                 res.body.cid.should.equal(1);
-                res.body.uid.should.equal(1);
-                res.body.pid.should.equal(1);
                 res.body.text.should.equal('Lorem ipsum dolor sit amet, consectetur adipiscing elit.');
                 done();
             });
@@ -314,8 +312,6 @@ describe('Posts', function() {
                 res.body.length.should.equal(1);
                 res.body.should.be.a('array').that.is.not.empty;
                 res.body[0].cid.should.equal(1);
-                res.body[0].uid.should.equal(1);
-                res.body[0].pid.should.equal(1);
                 res.body[0].text.should.equal('Lorem ipsum dolor sit amet, consectetur adipiscing elit.');
                 done();
             })

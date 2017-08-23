@@ -9,7 +9,7 @@
     <span>Create an Account</span>
     <form id="registerForm" method="post" action="/users">
         <input type="email" name="email"placeholder="Email Address" required/>
-        <input type="text" name="username"placeholder="Username" rquired/>
+        <input type="text" name="username"placeholder="Username" maxlength=30 required/>
         <input type="password" name="password" placeholder="Password" id="password1" required/>
         <input type="password" placeholder="Confirm Password" oninput="matchPassword(this)" required/>
     </form>

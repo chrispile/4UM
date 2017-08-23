@@ -1,0 +1,75 @@
+#inboxFeed {
+    padding-top: 10px;
+    position: relative;
+    width: 100%;
+    min-height: 100%;
+    padding-right: 310px;
+    box-sizing: border-box;
+    padding-left: 15px;
+}
+
+.message {
+    margin: 8px 14px;
+    display: block;
+    max-height: 45px;
+    width: 96%;
+    float: left;
+    vertical-align: middle;
+    border-radius: 4px;
+    background-color: #e5e3e3;
+    padding: 5px;
+    border: 2px solid #59A7C1;
+}
+
+.message:hover {
+    background-color: #d3d3d3;
+}
+
+.message div {
+    display: inline-block;
+    /*text-align: center;*/
+    float: left;
+    height: 30px;
+    margin-top: 12px;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.fromUserDiv {
+    width: 12%;
+    padding-left: 16px;
+}
+
+.messageTitle {
+    width: 60%;
+    padding-left: 80px;
+    color: #6d6d6d;
+}
+
+
+
+#replyForm {
+    margin-top: 80px;
+    position: relative;
+    bottom: 0;
+    display: block;
+}
+
+#messageTagline {
+    margin-bottom: 18px;
+}
+
+#viewMessage {
+    border: 1px solid black;
+    padding: 15px 10px 40px 10px;
+    border-radius: 4px;
+}
+
+#fromDiv, #viewFromUser, #viewTimestamp {
+    display: inline-block;
+}
+
+#viewTimestamp {
+    float: right;
+    margin-right: 10px;
+}

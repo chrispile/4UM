@@ -39,7 +39,7 @@ var comment = function() {
     var text = $('#commentTextArea').val();
     var pid = $(this).attr('data-pid');
     $.ajax({
-        url: "http://localhost:3000/posts/comments/" + pid,
+        url: "/posts/comments/" + pid,
         type: "POST",
         data: {text: text}
     }).done(function(json) {
@@ -52,7 +52,7 @@ var comment = function() {
 var getComments = function() {
     var pid = $('#submitCommentBtn').attr('data-pid');
     $.ajax({
-        url: "http://localhost:3000/posts/comments/" + pid,
+        url: "/posts/comments/" + pid,
         type: "GET"
     }).done(function(comments) {
         commentsArr = comments;
@@ -64,29 +64,21 @@ var getComments = function() {
     })
 }
 
-
 var createCommentLi = function(comment) {
-    var uid = comment.uid;
-    $.ajax({
-        url: "http://localhost:3000/users/" + uid,
-        type: "GET",
-        dataType: "json"
-    }).done(function(json) {
-        var username = json.username;
-        var li = $('<li/>').addClass('textDiv');
-        var header = $('<div/>').addClass('commentHeader')
-        var timeago  = jQuery.timeago(new Date(comment.timestamp));
-        header.html('<a href="/u/' + username + '" class="author">' + username + '</a> ' + timeago);
-        var textDiv = $('<div/>').addClass("text").html(comment.text);
-        li.append(header).append(textDiv);
-        $('#commentList').prepend(li);
-    });
+    var username = comment.username;
+    var li = $('<li/>').addClass('textDiv');
+    var header = $('<div/>').addClass('commentHeader')
+    var timeago  = jQuery.timeago(new Date(comment.timestamp));
+    header.html('<a href="/u/' + username + '" class="author">' + username + '</a> commented ' + timeago);
+    var textDiv = $('<div/>').addClass("text").html(comment.text);
+    li.append(header).append(textDiv);
+    $('#commentList').prepend(li);
 }
 
 var deletePost = function(event) {
     var pid = $('#submitCommentBtn').attr('data-pid');
     $.ajax({
-        url: "http://localhost:3000/posts",
+        url: "/posts",
         type: "DELETE",
         data: {pid: pid}
     }).done(function() {
@@ -155,7 +147,7 @@ var downvote = function(event) {
 
 var vote = function(pid, value, type) {
     $.ajax({
-        url: "http://localhost:3000/posts/voted/" + pid,
+        url: "/posts/voted/" + pid,
         type: "POST",
         data: {value: value, type: type}
     })

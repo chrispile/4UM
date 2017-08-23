@@ -78,7 +78,7 @@ describe('SUB4UMs', function() {
                 description: 'This is a different description',
                 type: 'protected'})
             .end(function(err, res) {
-                res.should.have.status(HttpStatus.CONFLICT);
+                res.should.have.status(HttpStatus.OK);
                 res.should.be.json;
                 res.body.error.code.should.equal(3000);
                 res.body.error.name.should.equal('The SUB4UM name is already taken');
@@ -351,6 +351,14 @@ describe('SUB4UMs', function() {
         });
     });
     describe('Requests', function() {
+        before(function(done) {
+            agent.delete('/sub4ums/subscribe')
+            .set('content-type', 'application/x-www-form-urlencoded')
+            .send({sid: 1})
+            .end(function(err, res) {
+                done();
+            });
+        })
         it('GET /requests/1 should return empty array', function(done) {
             agent.get('/sub4ums/requests/1')
             .end(function(err, res) {
@@ -411,9 +419,7 @@ describe('SUB4UMs', function() {
             });
         });
         it('DELETE /requests should return OK', function(done) {
-            agent.delete('/sub4ums/requests')
-            .set('content-type', 'application/x-www-form-urlencoded')
-            .send({sid: 1, uid: 1})
+            agent.delete('/sub4ums/requests/1/1')
             .end(function(err, res) {
                 res.should.have.status(HttpStatus.OK);
                 done();

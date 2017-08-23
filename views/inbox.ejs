@@ -1,0 +1,61 @@
+<%- include('header', {title: title, style: '../../stylesheets/inbox.css'}); %>
+
+        <h3>Inbox</h3>
+        <h6>Connect with other 4UM Users by sending them a message!</h6>
+        <h6>Invites for private SUB4UMs will be received as messages.</h6>
+        <label id="createLinkPost" for="modal1">Send a message</label>
+    </div>
+    <div id="inboxFeed">
+        <div id="noMessages">There are no messages in your inbox.</div>
+        <ul class="mailList"></ul>
+    </div>
+</div>
+
+<input class="modalState" id="modal1" type="checkbox"/>
+<div class="modal">
+    <label class="modalBg" for="modal1"></label>
+    <div class="modalContent">
+        <label for="modal1">
+            <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
+        </label>
+        <h2>Send a message</h2>
+        <form id="postLinkForm">
+            <label for="toUser">To:</label>
+            <input type="text" id="sendUsername" name="toUser" maxlength="30" placeholder="Enter username..."required></input></br>
+            <div id="noUser">There is no one registered with that username.</div>
+            <label for="title">Title:</label>
+            <input type="text" id="sendTitle" name="title" maxlength="65" required></input></br>
+            <label for="messageText">Message:</label>
+            <textarea type="text" id="sendText" name="messageText" maxlength="40000" required></textarea></br>
+            <input type="submit" value="Send" id="messageSubmit" data-type="send">
+        </form>
+    </div>
+</div>
+
+<input class="modalState" id="modal2" type="checkbox"/>
+<div class="modal">
+    <label class="modalBg" for="modal2"></label>
+    <div class="modalContent">
+        <label for="modal2">
+            <i class="fa fa-times fa-lg modalClose" aria-hidden="true"></i>
+        </label>
+        <h2 id="viewTitle">Message Title</h2>
+        <div id="messageTagline">
+            <div id="fromDiv">From: </div>
+            <div id="viewFromUser">Hellocuhris</div>
+            <div id="viewTimestamp">3 hours ago</div>
+        </div>
+        <p id="viewMessage">This is some random Message</p>
+        <form id="replyForm">
+            <input type= "hidden"  id="replyUsername"></input>
+            <h2>Send a reply:</h2>
+            <label for="title">Title:</label>
+            <input type="text" id="replyTitle" name="title" maxlength="65" required></input></br>
+            <label for="messageText">Message:</label>
+            <textarea type="text" id="replyText" name="messageText" maxlength="40000" required></textarea></br>
+            <input type="submit" value="Reply" id="replySubmit" data-type="reply">
+        </form>
+    </div>
+</div>
+
+<%- include('footer', {script: "../../javascripts/inbox.js"}); %>
