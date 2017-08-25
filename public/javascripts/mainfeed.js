@@ -32,10 +32,6 @@ $(document).ready(function() {
         }
     }
 
-    $('#title1').keyup({max: 300, currentID: '#current1', maxID: '#max1'}, textareaCounter);
-    $('#title2').keyup({max: 300, currentID: '#current2', maxID: '#max2'}, textareaCounter);
-    $('#text').keyup({max: 40000, currentID: '#current3', maxID: '#max3'}, textareaCounter);
-
     $('.modalBg').click(closeModal);
     $('.modalClose').click(closeModal);
 
@@ -57,18 +53,7 @@ $(document).ready(function() {
     $('#recentBtn').on('click', sortDate);
 });
 
-var getsid = function() {
-    $.ajax( {
-        url: "/sub4ums/sname/" + urlsname,
-        type: "GET",
-        dataType: "json"
-    }).done(function(json) {
-        forumsid = json[0].sid;
-        getMods(forumsid);
-        getSubscribers();
-        getUserRequests();
-    });
-}
+//FUNCTIONS USED FOR HOMEFEED
 
 var getSubscribed = function() {
     $.ajax( {
@@ -92,36 +77,201 @@ var getForum = function() {
     });
 }
 
-var getUserPosts = function() {
-    //get sub4ums that the logged in user is subscribed to (or the public ones)
+var getSUB4UMS = function() {
     $.ajax( {
-        url: "/sub4ums/options",
+        url: "/sub4ums/subscribe",
         type: "GET",
         dataType: "json"
     }).done(function(json) {
-        var sub4ums = json;
-        var username = $('#username').html();
-        var promises = [];
-        $.each(sub4ums, function(index, forum) {
-            var sname = forum.sname;
-            var request = $.ajax({
-                url: "/posts/username/" + username + "/" + sname,
-                type: "GET",
-                dataType: "json"
-            }).done(function(json) {
-                listPosts = listPosts.concat(json);
-            });
-            promises.push(request);
-        })
-        $.when.apply(null, promises).done(function() {
-            if(listPosts.length == 0) {
-                $('#noPosts').show();
-            } else {
-                sortScore();
-            }
-        })
+        sub4ums = json;
+        addOptions();
     });
 }
+
+var addOptions = function() {
+    $.each(sub4ums, function(index, obj) {
+        var sname = obj.sname;
+        var option = $('<option/>').html(sname).attr('value', sname);
+        $('.SUB4UMlist').append(option);
+    })
+}
+
+//FUNCTIONS USED FOR SUB4UM FEED
+
+var getsid = function() {
+    $.ajax( {
+        url: "/sub4ums/sname/" + urlsname,
+        type: "GET",
+        dataType: "json"
+    }).done(function(json) {
+        forumsid = json[0].sid;
+        getMods(forumsid);
+        getSubscribers();
+        getUserRequests();
+    });
+}
+
+var getMods = function(sid) {
+    $.ajax( {
+        url: "/sub4ums/mods/" + sid,
+        type: "GET",
+    }).done(function(json) {
+        mods = json;
+        addModOptions();
+    });
+}
+
+var addModOptions = function() {
+    $.each(mods, function(index, mod) {
+        var option = $('<option/>').html(mod.username).attr('value', mod.username).attr('data-uid',mod.uid);
+        $('#removeModSelect').append(option);
+    })
+}
+
+var getSubscribers = function() {
+    $.ajax( {
+        url: "/sub4ums/subscribers/" + forumsid,
+        type: "GET",
+    }).done(function(json) {
+        subscribers = json;
+        addSubscribersOptions();
+    });
+}
+
+var addSubscribersOptions = function() {
+    $.each(subscribers, function(index, subscriber) {
+        var option = $('<option/>').html(subscriber.username).attr('value', subscriber.username).attr('data-uid', subscriber.uid);
+        $('#addModSelect').append(option);
+    })
+}
+
+var getUserRequests = function() {
+    $.ajax({
+        url: "/sub4ums/requests/" + forumsid,
+        type: "GET",
+        dataType: "json"
+    }).done(function(json) {
+        userRequests = json;
+        if(userRequests.length != 0) {
+            $.each(userRequests, function(i, request) {
+                var uid = request.uid;
+                var username = request.username;
+                var input = $('<input>').attr({type: 'checkbox', name: 'username', value: username});
+                var inputStr = "<input type='checkbox' name='username' value='" + username + "' data-uid='" + uid + "'>";
+                var label = $('<label/>').html(inputStr + " " + username);
+                $(label).appendTo('#userRequestsList')
+            });
+        } else {
+            $('#approveUsersBtn').hide();
+            $('#noRequests').show();
+        }
+    })
+}
+
+var approveRequests = function(event) {
+    $('#userRequestsList label input:checked').each(function() {
+        var username = $(this).val();
+        var uid = $(this).attr('data-uid');
+        var label = $(this).parent();
+        $.ajax({ //remove from requests
+            url: "/sub4ums/requests/" + uid + "/" + forumsid,
+            type: "DELETE",
+            data: {sname: urlsname}
+        }).done(function() {
+            $(label).remove();
+            for(var i = 0; i < userRequests.length; i++) {
+                if(userRequests[i].uid == uid) {
+                    userRequests.splice(i, 1);
+                }
+            }
+            if(userRequests.length == 0) {
+                $('#approveUsersBtn').hide();
+                $('#noRequests').show();
+            }
+            closeModal();
+        })
+    })
+}
+
+var inviteUser = function(event) {
+    var form = $(this).parent();
+    if($(form)[0].checkValidity()) {
+        var toUser = $('#inviteUsername').val();
+        var accesscode = $('#inviteAccessCode').val();
+        var title = 'PRIVATE SUB4UM INVITE'
+        var sname = $(this).attr('data-sname');
+        var message = 'Hello, you have been invited to join the SUB4UM: ' + sname + '. To accept the invite, use the following access code: ' + accesscode;
+        $.ajax({
+            url: "/messages",
+            data: {toUser: toUser, title: title, message: message},
+            type: "POST"
+        }).done(function(result) {
+            if(result.hasOwnProperty('error')) {
+                $('#noUser').show();
+            } else {
+                $('.modalState').prop('checked', false);
+                closeModal();
+                socket.emit('addMessage', result);
+            }
+        });
+    }
+}
+
+var deleteSub4um = function() {
+    $.ajax({
+        url: "/sub4ums/" + urlsname,
+        type: "DELETE",
+    })
+}
+
+var addMod = function() {
+    var uid = $('#addModSelect option:selected').attr('data-uid');
+    var username = $('#addModSelect option:selected').val();
+    $.ajax({
+        url: "/sub4ums/mod",
+        type: "POST",
+        data: {uid: uid, sid: forumsid}
+    }).done(function(json) {
+        $('#addModSelect option:selected').remove();
+        var option = $('<option/>').html(username).attr('value', username).attr('data-uid', json.uid);
+        $('#removeModSelect').append(option);
+    });
+}
+
+var removeMod = function() {
+    var uid = $('#removeModSelect option:selected').attr('data-uid');
+    var username = $('#removeModSelect option:selected').val();
+    $.ajax({
+        url: "/sub4ums/mod/" + uid,
+        type: "DELETE",
+    }).done(function(json) {
+        $('#removeModSelect option:selected').remove();
+        var option = $('<option/>').html(username).attr('value', username).attr('data-uid', uid);
+        $('#addModSelect').append(option);
+    })
+}
+
+
+//FUNCTIONS USED FOR PROFILE FEED
+
+    //Get sub4ums that the logged in user is has posted (does not need to be subscribed to SUB4UM)
+var getUserPosts = function() {
+    var username = $('#username').html();
+    $.ajax({
+        url: "/posts/username/" + username,
+        type: "GET",
+        dataType: "json"
+    }).done(function(json) {
+        listPosts = json;
+        if(listPosts.length == 0) {
+            $('#noPosts').show();
+        } else {
+            sortScore();
+        }
+    });
+}
+
+//GENERAL FUNCTIONS
 
 var getPosts = function() {
     var promises = [];
@@ -225,7 +375,8 @@ var createPostElem = function(post, rank) {
         postButtons.append(comments);
     });
     var qualified = qualifiedToDelete(post.sname).then(function(result) {
-        if(result) {
+        var userhref = $('#profileHref').attr('href').split('/').pop();
+        if(result || userhref == post.username) {
             var deleteBtn = $('<li/>').addClass('deleteBtn').html('delete');
             postButtons.append(deleteBtn);
         }
@@ -241,18 +392,6 @@ async function qualifiedToDelete(sname) {
         type: "GET"
     })
     return json.qualified;
-}
-
-var textareaCounter = function(event) {
-    var len = $(this).val().length;
-    if(len >= event.data.max) {
-        $(event.data.currentID).css('color', '#A83434');
-        $(event.data.maxID).css('color', '#A83434');
-    } else {
-        $(event.data.currentID).css('color', '#000');
-        $(event.data.maxID).css('color', '#000');
-    }
-    $(event.data.currentID).text(len);
 }
 
 var upvote = function(event) {
@@ -373,25 +512,6 @@ var postPost = function(event) {
     }
 }
 
-var getSUB4UMS = function() {
-    $.ajax( {
-        url: "/sub4ums/options",
-        type: "GET",
-        dataType: "json"
-    }).done(function(json) {
-        sub4ums = json;
-        addOptions();
-    });
-}
-
-var addOptions = function() {
-    $.each(sub4ums, function(index, obj) {
-        var sname = obj.sname;
-        var option = $('<option/>').html(sname).attr('value', sname);
-        $('.SUB4UMlist').append(option);
-    })
-}
-
 var closeModal = function(event) {
     $('form input[type=text]').val('');
     $('form input[type=url]').val('');
@@ -424,74 +544,6 @@ var sortScore = function() {
     loadList();
 }
 
-var deleteSub4um = function() {
-    $.ajax({
-        url: "/sub4ums/" + urlsname,
-        type: "DELETE",
-    })
-}
-
-var getSubscribers = function() {
-    $.ajax( {
-        url: "/sub4ums/subscribers/" + forumsid,
-        type: "GET",
-    }).done(function(json) {
-        subscribers = json;
-        addSubscribersOptions();
-    });
-}
-
-var addSubscribersOptions = function() {
-    $.each(subscribers, function(index, subscriber) {
-        var option = $('<option/>').html(subscriber.username).attr('value', subscriber.username).attr('data-uid', subscriber.uid);
-        $('#addModSelect').append(option);
-    })
-}
-
-var addMod = function() {
-    var uid = $('#addModSelect option:selected').attr('data-uid');
-    var username = $('#addModSelect option:selected').val();
-    $.ajax({
-        url: "/sub4ums/mod",
-        type: "POST",
-        data: {uid: uid, sid: forumsid}
-    }).done(function(json) {
-        $('#addModSelect option:selected').remove();
-        var option = $('<option/>').html(username).attr('value', username).attr('data-uid', json.uid);
-        $('#removeModSelect').append(option);
-    });
-}
-
-var getMods = function(sid) {
-    $.ajax( {
-        url: "/sub4ums/mods/" + sid,
-        type: "GET",
-    }).done(function(json) {
-        mods = json;
-        addModOptions();
-    });
-}
-
-var addModOptions = function() {
-    $.each(mods, function(index, mod) {
-        var option = $('<option/>').html(mod.username).attr('value', mod.username).attr('data-uid',mod.uid);
-        $('#removeModSelect').append(option);
-    })
-}
-
-var removeMod = function() {
-    var uid = $('#removeModSelect option:selected').attr('data-uid');
-    var username = $('#removeModSelect option:selected').val();
-    $.ajax({
-        url: "/sub4ums/mod/" + uid,
-        type: "DELETE",
-    }).done(function(json) {
-        $('#removeModSelect option:selected').remove();
-        var option = $('<option/>').html(username).attr('value', username).attr('data-uid', uid);
-        $('#addModSelect').append(option);
-    })
-}
-
 var checkURL = function() {
     var string = url.value;
     if (!~string.indexOf("http")) {
@@ -516,63 +568,4 @@ var deletePost = function(event) {
         };
         loadList();
     });
-}
-
-var getUserRequests = function() {
-    $.ajax({
-        url: "/sub4ums/requests/" + forumsid,
-        type: "GET",
-        dataType: "json"
-    }).done(function(json) {
-        userRequests = json;
-        $.each(userRequests, function(i, request) {
-            var uid = request.uid;
-            var username = request.username;
-            var input = $('<input>').attr({type: 'checkbox', name: 'username', value: username});
-            var inputStr = "<input type='checkbox' name='username' value='" + username + "' data-uid='" + uid + "'>";
-            var label = $('<label/>').html(inputStr + " " + username);
-            $(label).appendTo('#userRequestsList')
-        });
-    })
-}
-
-var approveRequests = function(event) {
-    $('#userRequestsList label input:checked').each(function() {
-        var username = $(this).val();
-        var uid = $(this).attr('data-uid');
-        var label = $(this).parent();
-        $.ajax({ //remove from requests
-            url: "/sub4ums/requests/" + uid + "/" + forumsid,
-            type: "DELETE",
-            data: {sname: urlsname}
-        }).done(function() {
-            $(label).remove();
-            closeModal();
-        })
-    })
-}
-
-var inviteUser = function(event) {
-    var form = $(this).parent();
-    if($(form)[0].checkValidity()) {
-        var toUser = $('#inviteUsername').val();
-        var accesscode = $('#inviteAccessCode').val();
-        var title = 'PRIVATE SUB4UM INVITE'
-        var sname = $(this).attr('data-sname');
-        var message = 'Hello, you have been invited to join the SUB4UM: ' + sname + '. To accept the invite, use the following access code: ' + accesscode;
-        $.ajax({
-            url: "/messages",
-            data: {toUser: toUser, title: title, message: message},
-            type: "POST"
-        }).done(function(result) {
-            console.log(result);
-            if(result.hasOwnProperty('error')) {
-                $('#noUser').show();
-            } else {
-                $('.modalState').prop('checked', false);
-                closeModal();
-                socket.emit('addMessage', result);
-            }
-        });
-    }
 }

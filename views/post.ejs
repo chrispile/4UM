@@ -27,7 +27,7 @@
                     <% } %>
                     <ul class="postButtons">
                         <li class="comments"></li>
-                        <% if(canDelete) { %>
+                        <% if(canDelete || post.username == username) { %>
                             <li class="deleteBtn">delete</li>
                         <% } %>
                     </ul>
@@ -39,12 +39,11 @@
                 <div >Comment</div>
                 <textarea type="text" id="commentTextArea" name="comment" maxlength="40000"></textarea></br>
                 <input id="submitCommentBtn" type="submit" value="save" data-pid="<%=post.pid%>">
+                <div id="postNotFound">Failed to comment. This post no longer exists.</div>
             </form>
             <ul id="commentList"></ul>
         </div>
     </div>
 </div>
-
-
 
 <%- include('footer', {script: "../../javascripts/post.js"}); %>

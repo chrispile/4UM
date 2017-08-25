@@ -27,7 +27,6 @@
 
 .message div {
     display: inline-block;
-    /*text-align: center;*/
     float: left;
     height: 30px;
     margin-top: 12px;
@@ -45,8 +44,6 @@
     padding-left: 80px;
     color: #6d6d6d;
 }
-
-
 
 #replyForm {
     margin-top: 80px;

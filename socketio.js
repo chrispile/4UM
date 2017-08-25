@@ -15,6 +15,9 @@ module.exports = {
             socket.on('addComment', function(comment) {
                 socket.broadcast.to(room).emit('newComment', comment);
             });
+			socket.on('deleteComment', function(cid) {
+				socket.broadcast.to(room).emit('removeComment', cid);
+			});
 			socket.on('addMessage', function(message) {
 				var toUser = '/inbox/u/' + message.touser;
 				socket.broadcast.to(toUser).emit('newMessage', message);

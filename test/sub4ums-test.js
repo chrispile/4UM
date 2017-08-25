@@ -476,7 +476,7 @@ describe('SUB4UMs', function() {
         })
     })
     var newForumSID;
-    describe('Options', function(done) {
+    describe('Delete', function(){
         before(function(done) {
             agent.post('/sub4ums')  //POST NEW SUB4UM
             .set('content-type', 'application/x-www-form-urlencoded')
@@ -489,24 +489,7 @@ describe('SUB4UMs', function() {
                 newForumSID = res.body[0].sid;
                 done();
             })
-        })
-        it('GET /options will return 2 sub4ums (one that is public and one that the user is subscribed to)', function(done) {
-            agent.get('/sub4ums/options')
-            .end(function(err, res) {
-                res.should.have.status(HttpStatus.OK);
-                res.should.be.json;
-                res.body.length.should.equal(2);
-                res.body[0].sid.should.equal(1);
-                res.body[0].sname.should.equal('GameOfThrones');
-                res.body[0].type.should.equal('public');
-                res.body[1].sid.should.equal(newForumSID);
-                res.body[1].sname.should.equal('News');
-                res.body[1].type.should.equal('protected');
-                done();
-            })
-        })
-    });
-    describe('Delete', function(){
+        });
         it('Delete /:sname should return OK', function(done){
             agent.delete('/sub4ums/News')
             .end(function(err, res) {

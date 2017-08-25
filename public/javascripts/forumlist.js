@@ -1,8 +1,3 @@
-/*
-NEED TO DO
-- Joining a private SUB4UM through the modal
-*/
-
 var forumList;
 var user4UMs = [];
 var publicList;
@@ -257,12 +252,7 @@ var postSUB4UM = function(event) {
             data: postData
         }).done(function(arr) {
             if(arr.hasOwnProperty('error')) {
-                var response = arr.error.name;
-                var errorDiv = $('<div/>').addClass("failDiv");
-                var exclamation = $('<i/>').addClass("fa fa-exclamation-triangle").attr('aria-hidden', 'true');
-                var message = $('<div/>').addClass("failMessage").html(arr.error.name);
-                errorDiv.append(exclamation).append(message);
-                $('#sname').before(errorDiv);
+                $('#snameTaken').css('display', 'inline-block');
             } else {
                 closeModal();
                 $('.modalState').prop('checked', false);
@@ -303,7 +293,7 @@ var closeModal = function(event) {
     $('form textarea').val('');
     $('.current').html(0);
     $('form input[type=radio]').prop('checked', false);
-    $('.failDiv').remove();
+    $('.failDiv').hide();
     $('.unsubscribeForm').hide();
 }
 
@@ -350,7 +340,6 @@ var joinPrivate = function() {
             var exclamation = $('<i/>').addClass("fa fa-exclamation-triangle").attr('aria-hidden', 'true');
             var message = $('<div/>').addClass("failMessage").html(json.error.name);
             errorDiv.append(exclamation).append(message);
-            console.log(errorDiv);
             $('#accessCodeTitle').after(errorDiv);
         } else {
             user4UMs.push(json);

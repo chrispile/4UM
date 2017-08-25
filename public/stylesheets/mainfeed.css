@@ -78,16 +78,23 @@ ul {
 
 }
 
-.postButtons li {
+.postButtons li, .deleteComment{
     margin-right: 14px;
     display: inline;
     font-weight: bold;
 }
 
-.postButtons li:hover {
+.deleteComment {
+    margin-top: 14px;
+    font-size: 14px;
+}
+
+
+.postButtons li:hover, .deleteComment:hover {
     text-decoration: underline;
     cursor: pointer;
 }
+
 
 .author, .forum {
     color: #40798C;
@@ -96,27 +103,6 @@ ul {
 .author:hover, .forum:hover {
     color: #0B2027;
     text-decoration: underline;
-}
-
-.charNum {
-    display: inline;
-    font-size: 18px;
-    float: right;
-}
-
-#sort {
-    border-bottom: 2px solid #59A7C1;
-}
-
-.sortBtn {
-    background: none;
-    padding: 6px 10px;
-    width: 80px;
-    display: inline-block;
-    margin: 0;
-    border: 2px solid #59A7C1;
-    border-bottom: none;
-    border-radius: 4px 4px 0 0;
 }
 
 #userRequestsList {
@@ -131,6 +117,7 @@ ul {
 
 .text {
     white-space: pre-wrap;
+    margin-bottom: 10px;
 }
 
 #commentDiv {
@@ -159,3 +146,13 @@ ul {
  #commentList li {
      margin-bottom: 14px;
  }
+
+#postNotFound {
+    color: #F0523D;
+    display: none;
+}
+
+#noRequests {
+    color: #6d6d6d;
+    display: none;
+}

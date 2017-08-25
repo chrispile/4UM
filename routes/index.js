@@ -6,7 +6,6 @@ var pgClient = pgSetup.getClient();
 var requireLogin = require('../requireLogin');
 var HttpStatus = require('http-status-codes')
 
-
 router.get('/',  function(req, res, next) {
   res.render('login', { title: 'Login', fail: ''});
 });
@@ -104,7 +103,6 @@ router.get('/s/:sname', requireLogin, function(req, res, next) {
 })
 
 router.get('/s/:sname/:pid', requireLogin, function(req, res, next) {
-    //check if sname is public, if not then check if user is subscribed
     queryConfig = {
         text: "SELECT * FROM sub4ums WHERE sname=$1 AND (type='public' OR EXISTS(SELECT * FROM subscribes WHERE uid=$2 AND sname=$1))",
         values: [req.params.sname, res.locals.user.uid]

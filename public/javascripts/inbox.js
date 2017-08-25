@@ -50,7 +50,6 @@ var readMessage = function() {
          data: {hasRead: true}
      }).done(function() {
          var messageTitle = $(message).children()[1];
-         console.log(messageTitle);
          $(messageTitle).css('font-weight', 'normal').css('color', '#6d6d6d');
      });
 }
@@ -73,20 +72,13 @@ var getMessages = function() {
 }
 
 var createMessageLi = function(message) {
-
-    var mid = message.mid;
-    var fromUser = message.fromuser;
-    var title = message.title;
-    var hasRead = message.hasread;
-    var timestamp = message.timestamp;
-
-    var li = $('<li/>').addClass('message').attr('data-mid', mid);
-    var fromUserDiv = $('<div/>').addClass('fromUserDiv').html(fromUser);
-    var messageTitle = $('<div/>').addClass('messageTitle').html(title);
-    if(!hasRead) {
+    var li = $('<li/>').addClass('message').attr('data-mid', message.mid);
+    var fromUserDiv = $('<div/>').addClass('fromUserDiv').html(message.fromuser);
+    var messageTitle = $('<div/>').addClass('messageTitle').html(message.title);
+    if(!message.hasread) {
         $(messageTitle).css('font-weight', 'bold').css('color', 'black');
     }
-    var messageTime = $('<div/>').addClass('messageTime').html(jQuery.timeago(new Date(timestamp)));
+    var messageTime = $('<div/>').addClass('messageTime').html(jQuery.timeago(new Date(message.timestamp)));
     li.append(fromUserDiv).append(messageTitle).append(messageTime);
     return li;
 }
@@ -114,7 +106,6 @@ var sendMessage = function() {
             } else {
                 $('.modalState').prop('checked', false);
                 closeModal();
-                console.log(result);
                 socket.emit('addMessage', result);
             }
         });

@@ -18,5 +18,9 @@ module.exports = {
     AlreadySubscribed: {
         code: 3002,
         name: 'You are already subscribed to the SUB4UM'
-    }
+    },
+    PostNotFound: {
+        code: 4001,
+        name: 'Post does not exist'
+    },
 }

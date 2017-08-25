@@ -38,6 +38,10 @@
         <h2>Create your own SUB4UM</h2>
         <form id="SUB4UMForm">
             <label for="name2UM">name</label>
+            <div class="failDiv" id="snameTaken">
+                <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                <div class="failMessage">The SUB4UM name is already taken</div>
+            </div>
             <input type="text" id="sname" name="name" maxlength="20" required/>
 
             <label for="title2UM">title</label>

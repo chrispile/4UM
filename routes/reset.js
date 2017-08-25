@@ -6,6 +6,8 @@ var pgClient = pgSetup.getClient();
 var errorCodes = require('../errorCodes');
 var HttpStatus = require('http-status-codes')
 
+//Returns a Reset row by token
+    //If the token is incorrect or does not exist, return an error.
 router.get("/:token", function(req, res, next) {
     pgClient.query("SELECT * FROM Resets WHERE token=$1", [req.params.token], function(err, result) {
         if(err) {
@@ -21,6 +23,7 @@ router.get("/:token", function(req, res, next) {
     })
 })
 
+//Returns all rows from Resets
 router.get("/", function(req, res, next) {
     pgClient.query("SELECT * FROM Resets", [], function(err, result) {
         if(err) {
@@ -32,6 +35,10 @@ router.get("/", function(req, res, next) {
     })
 })
 
+//Posts new row into Resets
+    //If email is incorrect, render recover page with error message
+    //If a reset token already exists, update the row with a new token.
+    //After inserting or updating, render the recovery email page.
 router.post("/", function(req, res, next) {
     var email = req.body.email;
     pgClient.query("SELECT EXISTS(SELECT 1 FROM Users WHERE email=$1)", [email], function(err, result) {
@@ -66,6 +73,7 @@ router.post("/", function(req, res, next) {
     })
 })
 
+//Deletes a Reset row by token
 router.delete("/:token", function(req, res, next) {
     pgClient.query("DELETE FROM Resets WHERE token=$1", [req.params.token], function(err, result) {
         if(err) {

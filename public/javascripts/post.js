@@ -1,10 +1,11 @@
 var commentsArr;
 var room = (window.location.href).split('/s').pop();
 var socket;
+var canDelete;
 
 $(document).ready(function() {
     createTagLine();
-    getComments();
+    qualifiedToDelete();
 
     socket = io();
     socket.emit('joinRoom', room);
@@ -18,12 +19,20 @@ $(document).ready(function() {
     $('.upvote').on('click', upvote);
     $('.downvote').on('click', downvote);
 
+    $('#commentList').on('click', '.deleteComment', deleteComment);
+
     socket.on('newComment', function(comment) {
-        console.log('comment was added');
         createCommentLi(comment);
     });
+    socket.on('removeComment', function(cid) {
+        $('.textDiv[data-cid="' + cid + '"]')[0].remove();
+        $.each(commentsArr, function(i, comment) {
+            if(comment.cid == cid) {
+                commentsArr.splice(i, 1);
+            }
+        })
+    });
 });
-
 
 var createTagLine = function() {
     var tagline = $('#tagline');
@@ -37,16 +46,36 @@ var createTagLine = function() {
 
 var comment = function() {
     var text = $('#commentTextArea').val();
-    var pid = $(this).attr('data-pid');
+    if(text != '') {
+        var pid = $(this).attr('data-pid');
+        $.ajax({
+            url: "/posts/comments/" + pid,
+            type: "POST",
+            data: {text: text}
+        }).done(function(result) {
+            if(result.hasOwnProperty('error')) {
+                $('#commentTextArea').hide();
+                $('#submitCommentBtn').hide();
+                $('#postNotFound').show();
+            } else {
+                $('#commentTextArea').val('');
+                createCommentLi(result);
+                socket.emit('addComment', result);
+            }
+        })
+    }
+}
+
+
+var qualifiedToDelete = function () {
+    var sname = room.split('/')[1];
     $.ajax({
-        url: "/posts/comments/" + pid,
-        type: "POST",
-        data: {text: text}
+        url: "/sub4ums/qualified/" + sname,
+        type: "GET"
     }).done(function(json) {
-        $('#commentTextArea').val('');
-        createCommentLi(json);
-        socket.emit('addComment', json);
-    });
+        canDelete = json.qualified;
+        getComments();
+    })
 }
 
 var getComments = function() {
@@ -66,12 +95,17 @@ var getComments = function() {
 
 var createCommentLi = function(comment) {
     var username = comment.username;
-    var li = $('<li/>').addClass('textDiv');
+    var li = $('<li/>').addClass('textDiv').attr('data-cid', comment.cid);
     var header = $('<div/>').addClass('commentHeader')
     var timeago  = jQuery.timeago(new Date(comment.timestamp));
     header.html('<a href="/u/' + username + '" class="author">' + username + '</a> commented ' + timeago);
     var textDiv = $('<div/>').addClass("text").html(comment.text);
     li.append(header).append(textDiv);
+    var userhref = $('#profileHref').attr('href').split('/').pop();
+    if(userhref == username || canDelete) {
+        var deleteBtn = $('<div/>').addClass('deleteComment').html('delete');
+        li.append(deleteBtn);
+    }
     $('#commentList').prepend(li);
 }
 
@@ -83,6 +117,19 @@ var deletePost = function(event) {
         data: {pid: pid}
     }).done(function() {
         window.location = "/home";
+    });
+}
+
+
+var deleteComment = function(event) {
+    var li = $(this).parent();
+    var cid = $(li).attr('data-cid');
+    $.ajax({
+        url: "/posts/comments/" + cid,
+        type: "DELETE",
+    }).done(function() {
+        li.remove();
+        socket.emit('deleteComment', cid);
     });
 }
 
@@ -125,7 +172,6 @@ var downvote = function(event) {
         var upvote = $(this).prev().prev();
         if($(upvote).css('color') == 'rgb(0, 0, 0)') { //decrement score once
             value = -1;
-
         } else { //decrement score twice
             $(upvote).css('color', '#000');
             value = -2;

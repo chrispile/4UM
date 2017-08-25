@@ -165,6 +165,14 @@ ul {
     height: 20%;
 }
 
+.urlShortModal {
+    height: 45%;
+}
+
+.urlShortModal2 {
+    height: 40%;
+}
+
 h2 {
     margin: 0;
     margin-bottom: 10px;
@@ -300,4 +308,19 @@ select option:hover {
     height: 200px;
     font-size: 30px;
     color: #6d6d6d;
+}
+
+#sort {
+    border-bottom: 2px solid #59A7C1;
+}
+
+.sortBtn {
+    background: none;
+    padding: 6px 10px;
+    width: 80px;
+    display: inline-block;
+    margin: 0;
+    border: 2px solid #59A7C1;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
 }

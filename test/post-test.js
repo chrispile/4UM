@@ -58,8 +58,8 @@ describe('Posts', function() {
             done();
         });
     });
-    it('GET /username/:username/:sname should return empty array', function(done) {
-        agent.get('/posts/username/hellocuhris/GameOfThrones')
+    it('GET /username/:username should return empty array', function(done) {
+        agent.get('/posts/username/hellocuhris')
         .end(function(err, res) {
             res.should.have.status(HttpStatus.OK);
             res.should.be.json;
@@ -121,8 +121,8 @@ describe('Posts', function() {
             done();
         });
     });
-    it('GET /username/:username/:sname should return array with one row', function(done) {
-        agent.get('/posts/username/hellocuhris/GameOfThrones')
+    it('GET /username/:username/ should return array with one row', function(done) {
+        agent.get('/posts/username/hellocuhris')
         .end(function(err, res) {
             res.should.have.status(HttpStatus.OK);
             res.should.be.json;
@@ -356,8 +356,8 @@ describe('Posts', function() {
                 done();
             });
         });
-        it('GET /username/:username/:sname should return empty array', function(done) {
-            agent.get('/posts/username/hellocuhris/GameOfThrones')
+        it('GET /username/:username/ should return empty array', function(done) {
+            agent.get('/posts/username/hellocuhris/')
             .end(function(err, res) {
                 res.should.have.status(HttpStatus.OK);
                 res.should.be.json;

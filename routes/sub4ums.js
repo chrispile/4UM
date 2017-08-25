@@ -5,13 +5,12 @@ var pgClient = pgSetup.getClient();
 var errorCodes = require('../errorCodes');
 var HttpStatus = require('http-status-codes')
 
-
 //SUBSCRIBES
 
-    // Returns all subscribers to a SUB4UM except if the logged in user is a moderator for that SUB4UM [CONFIRMED]
+    // Returns all subscribers to a SUB4UM except if the logged in user is a moderator for that SUB4UM
 router.get('/subscribers/:sid', function(req, res, next) {
     queryConfig = {
-        text: "SELECT users.uid, sid, sname, username FROM subscribes LEFT JOIN users on subscribes.uid = users.uid WHERE sid=$1 AND subscribes.uid!=$2 AND subscribes.uid NOT IN (SELECT uid FROM moderators where sid=$1)",
+        text: "SELECT users.uid, sid, sname, username FROM Subscribes LEFT JOIN Users on subscribes.uid = users.uid WHERE sid=$1 AND subscribes.uid!=$2 AND subscribes.uid NOT IN (SELECT uid FROM moderators where sid=$1)",
         values: [req.params.sid, res.locals.user.uid]
     }
     pgClient.query(queryConfig, function(err, result) {
@@ -23,9 +22,9 @@ router.get('/subscribers/:sid', function(req, res, next) {
     })
 })
 
-    //Returns all SUB4UMs that the logged in user is subscribed to [CONFIRMED]
+    //Returns all SUB4UMs that the logged in user is subscribed to
 router.get('/subscribe', function(req, res, next) {
-    pgClient.query('SELECT * FROM subscribes WHERE uid=$1', [res.locals.user.uid], function(err, result) {
+    pgClient.query('SELECT * FROM Subscribes WHERE uid=$1', [res.locals.user.uid], function(err, result) {
         if(err) {
             console.log(err)
         } else {
@@ -34,6 +33,8 @@ router.get('/subscribe', function(req, res, next) {
     })
 })
 
+    //Returns the inserted row for subscribing to a private SUB4UM through an access comment
+        //If user is already subscribed or if the access code does not exist, they will receive an error.
 router.post('/subscribe/private/:accesscode', function(req, res, next) {
     pgClient.query("SELECT sid, sname FROM sub4ums WHERE accesscode=$1", [req.params.accesscode], function(err, result) {
         if(err) {
@@ -41,14 +42,12 @@ router.post('/subscribe/private/:accesscode', function(req, res, next) {
         } else {
             if(result.rows.length == 0) {
                 res.json({error:errorCodes.AccessCodeDoesNotExist}).status(HttpStatus.NOT_FOUND);
-                console.log('what');
             } else {
                 var sid = result.rows[0].sid;
                 var sname = result.rows[0].sname;
                 pgClient.query('INSERT INTO subscribes(uid, sid, sname) VALUES ($1, $2, $3) RETURNING *', [res.locals.user.uid, sid, sname], function(err, result) {
                     if(err) {
                         if(err.constraint == 'subscribes_pkey') {
-                            console.log('what');
                             res.json({error: errorCodes.AlreadySubscribed}).status(HttpStatus.CONFLICT);
                         } else {
                             console.log(err);
@@ -62,7 +61,7 @@ router.post('/subscribe/private/:accesscode', function(req, res, next) {
     })
 });
 
-    //Used to confirm a pending request by subscribing a user to a sub4um [CONFIRMED]
+    //Returns the inserted row when confirming a subscribtion  to a SUB4UM of a user (that is not hte logged in user)
 router.post('/subscribe/:uid', function(req, res, next) {
     pgClient.query('INSERT INTO subscribes(uid, sid, sname) VALUES ($1, $2, $3) RETURNING *', [req.params.uid, req.body.sid, req.body.sname], function(err, result) {
         if(err) {
@@ -73,7 +72,7 @@ router.post('/subscribe/:uid', function(req, res, next) {
     })
 })
 
-    // Subscribes the logged-in user to a sub4um [CONFIRMED] TESTED
+    // Returns the row when inserting to subscribe the logged-in user to a SUB4UM
 router.post('/subscribe', function(req, res, next) {
     pgClient.query('INSERT INTO subscribes(uid, sid, sname) VALUES ($1, $2, $3) RETURNING *', [res.locals.user.uid, req.body.sid, req.body.sname], function(err, result) {
         if(err) {
@@ -84,7 +83,7 @@ router.post('/subscribe', function(req, res, next) {
     })
 })
 
-    // Deletes the logged-in user's subscription to a sub4um [CONFIRMED]
+    // Deletes the logged-in user's subscription to a SUB4UM
 router.delete('/subscribe', function(req, res, next) {
     pgClient.query('DELETE FROM subscribes WHERE uid=$1 AND sid=$2', [res.locals.user.uid, req.body.sid], function(err, result) {
         if(err) {
@@ -97,7 +96,7 @@ router.delete('/subscribe', function(req, res, next) {
 
 //ADMINS
 
-    //Returns all SIDs that the logged in user is an Admin for. [CONFIRMED]
+    //Returns all rows from Admins that the logged in user is an Admin for.
 router.get('/admin', function(req, res, next) {
     pgClient.query("SELECT * FROM Admins WHERE uid=$1", [res.locals.user.uid], function(err, result) {
         if(err) {
@@ -108,10 +107,9 @@ router.get('/admin', function(req, res, next) {
     })
 })
 
-
 //MODERATORS
 
-    //Returns all SIDs that the logged in user is a Moderator for. [CONFIRMED]
+    //Returns all rows from Moderators that the logged in user is a Moderator for.
 router.get('/mods', function(req, res, next) {
     pgClient.query("SELECT * FROM Moderators WHERE uid=$1", [res.locals.user.uid], function(err, result) {
         if(err) {
@@ -122,7 +120,7 @@ router.get('/mods', function(req, res, next) {
     })
 })
 
-    //Returns all moderators for one SUB4UM by sid. [CONFIRMED]
+    //Returns all moderators for a SUB4UM by sid.
 router.get('/mods/:sid', function(req, res, next) {
     pgClient.query("SELECT Users.uid, sid, username FROM Moderators LEFT JOIN Users ON Moderators.uid = Users.uid WHERE sid=$1", [req.params.sid], function(err, result) {
         if(err) {
@@ -133,7 +131,7 @@ router.get('/mods/:sid', function(req, res, next) {
     })
 })
 
-    // [CONFIRMED]
+    // Returns the inserted Moderator row
 router.post('/mod', function(req, res, next) {
     pgClient.query('INSERT INTO moderators(uid, sid) VALUES ($1, $2) RETURNING *', [req.body.uid, req.body.sid], function(err, result) {
         if(err) {
@@ -144,8 +142,7 @@ router.post('/mod', function(req, res, next) {
     })
 })
 
-
-    // [CONFIRMED]
+    // Deletes a row fro Moderators by uid
 router.delete('/mod/:uid', function(req, res, next) {
     pgClient.query('DELETE FROM Moderators WHERE uid=$1', [req.params.uid], function(err, result) {
         if(err) {
@@ -158,7 +155,7 @@ router.delete('/mod/:uid', function(req, res, next) {
 
 //REQUESTS
 
-    // Gets all requests for a sub4um [CONFIRMED]
+    // Gets all requests for a SUB4UM
 router.get('/requests/:sid', function(req, res, next) {
     pgClient.query('SELECT sid, sname, Users.uid, username FROM Requests LEFT JOIN Users ON Requests.uid=Users.uid WHERE sid=$1', [req.params.sid], function(err, result) {
         if(err) {
@@ -169,7 +166,7 @@ router.get('/requests/:sid', function(req, res, next) {
     })
 })
 
-    // Used to see which sub4ums the logged in user is pending for on the SUB4UM list page [CONFIRMED]
+    // Returns which sub4ums the logged in user has a pending request for a protected SUB4UM
 router.get('/requests', function(req, res, next) {
     pgClient.query('SELECT * FROM requests WHERE uid=$1', [res.locals.user.uid], function(err, result) {
         if(err) {
@@ -180,7 +177,7 @@ router.get('/requests', function(req, res, next) {
     })
 })
 
-    // [CONFIRMED]
+    // Returns the inserted Requests row
 router.post('/request', function(req, res, next) {
     pgClient.query('INSERT INTO requests(uid, sid, sname) VALUES ($1, $2, $3) RETURNING *', [res.locals.user.uid, req.body.sid, req.body.sname], function(err, result) {
         if(err) {
@@ -191,7 +188,7 @@ router.post('/request', function(req, res, next) {
     })
 })
 
-    // [CONFIRMED]
+    // Deletes a Request row by uid and sid.
 router.delete('/requests/:uid/:sid', function(req, res, next) {
     pgClient.query('DELETE FROM requests WHERE uid=$1 AND sid=$2', [req.params.uid, req.params.sid], function(err, result) {
         if(err) {
@@ -211,8 +208,8 @@ router.delete('/requests/:uid/:sid', function(req, res, next) {
 
 //GENERAL ROUTES
 
-//Checks if the user is either an Admin or Moderator for the specified SUB4UM.
-//This is used to determine if they can delete posts [CONFIRMED]
+    //Returns if the user is either an Admin or Moderator for the specified SUB4UM.
+    //This is used to determine if they can delete posts.
 router.get('/qualified/:sname', function(req, res, next) {
     var queryConfig = {
         text: "SELECT EXISTS(SELECT * FROM (SELECT uid FROM Moderators left join sub4ums on moderators.sid = sub4ums.sid WHERE sub4ums.sname = $2 UNION ALL SELECT uid FROM Admins left join sub4ums on Admins.sid = sub4ums.sid WHERE sub4ums.sname = $2) AS A WHERE uid=$1)",
@@ -231,7 +228,7 @@ router.get('/qualified/:sname', function(req, res, next) {
     })
 })
 
-    //Returns a sub4um by SNAME [CONFIRMED]
+    //Returns a SUB4UM by SNAME
 router.get('/sname/:sname', function(req, res, next) {
     pgClient.query("SELECT * FROM sub4ums WHERE sname=$1", [req.params.sname], function(err, result) {
         if(err) {
@@ -242,19 +239,7 @@ router.get('/sname/:sname', function(req, res, next) {
     })
 });
 
-    //RETURNS SUB4UMS THAT THE USER IS SUBSCRIBED TO AND ALL PUBLIC SUB4UMS [CONFIRMED]
-router.get('/options', function(req, res, next) {
-    pgClient.query("SELECT * FROM sub4ums WHERE type='public' OR sid IN (SELECT sid FROM subscribes WHERE uid=$1)", [res.locals.user.uid], function(err, result) {
-        if(err) {
-            console.log(err);
-        }
-        else {
-            res.json(result.rows);
-        }
-    })
-})
-
-    //Returns ALL sub4ums [CONFIRMED]
+    //Returns ALL sub4ums
 router.get('/', function(req, res, next) {
     pgClient.query("SELECT * FROM sub4ums", [], function(err, result) {
         if(err) {
@@ -266,7 +251,8 @@ router.get('/', function(req, res, next) {
     })
 });
 
-    // Posts new SUB4UM [CONFIRMED]
+    // Posts new SUB4UM and returns an array with the inserted rows for new forum and new admin.
+    //Returns an error if the sname sname is taken.
 router.post('/', function(req, res, next) {
     if(req.body.type == 'private') {
         var accesscode = '';
@@ -279,7 +265,7 @@ router.post('/', function(req, res, next) {
     }
     pgClient.query(queryConfig, function(err, result) {
         if(err) {
-            if(err.constraint == 'sub4ums_sname_key') { //NAME IS TAKEN
+            if(err.constraint == 'sub4ums_sname_key') {
                 res.json({error: errorCodes.SnameTaken});
             } else {
                 console.log(err);
@@ -309,7 +295,7 @@ router.post('/', function(req, res, next) {
     });
 });
 
-// [CONFIRMED]
+    // Deletes a SUB4UM by sname
 router.delete('/:sname', function(req, res, next) {
     pgClient.query('DELETE FROM sub4ums WHERE sname=$1', [req.params.sname], function(err, result) {
         if(err) {

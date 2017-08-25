@@ -85,3 +85,7 @@ a:hover {
 .icon {
     margin-left: 10px;
 }
+
+#snameTaken {
+    display: none;
+}
