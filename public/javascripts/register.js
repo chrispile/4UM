@@ -25,7 +25,6 @@ function matchPassword(input) {
 
 var resetPass = function() {
 	if($('#resetForm')[0].checkValidity()) {
-
 		var newpassword = $('#password1').val();
 		var email;
 		$.ajax({

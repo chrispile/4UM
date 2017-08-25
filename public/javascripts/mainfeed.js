@@ -297,11 +297,15 @@ var getPosts = function() {
 
 var loadList = function() {
     mainList.html('');
-    for(var postIndex = 0; postIndex < listPosts.length; postIndex++) {
-        var postLi = createPostElem(listPosts[postIndex], postIndex + 1);
-        mainList.append(postLi);
+    if(listPosts.length == 0) {
+        $('#noPosts').show();
+    } else {
+        for(var postIndex = 0; postIndex < listPosts.length; postIndex++) {
+            var postLi = createPostElem(listPosts[postIndex], postIndex + 1);
+            mainList.append(postLi);
+        }
+        getVoted();
     }
-    getVoted();
 }
 
 var getVoted = function() {
@@ -492,7 +496,7 @@ var postPost = function(event) {
             postData.url = $(form).find('#url').val();
         }
         else if($(form).attr('id') == 'postTextForm') {
-            postData.text = $(form).find('#text').val();
+            postData.text = $(form).find('#textAreaPost').val();
         }
         $.ajax({
             url: "/posts/" + sname,

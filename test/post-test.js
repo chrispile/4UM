@@ -325,6 +325,41 @@ describe('Posts', function() {
                 done();
             })
         });
+        it('DELETE /comments/:cid should return OK', function(done) {
+            agent.delete('/posts/comments/1/')
+            .end(function(err, res) {
+                res.should.have.status(HttpStatus.OK);
+                done();
+            });
+        });
+        it('GET /comments/:pid returns empty array', function(done) {
+            agent.get('/posts/comments/1')
+            .end(function(err, res) {
+                res.should.have.status(HttpStatus.OK);
+                res.should.be.json;
+                res.body.length.should.equal(0);
+                res.body.should.be.a('array').that.is.empty;
+                done();
+            })
+        });
+        it('GET /comments/:pid/count returns count of 0', function(done) {
+            agent.get('/posts/comments/1/count')
+            .end(function(err, res) {
+                res.should.have.status(HttpStatus.OK);
+                res.should.be.json;
+                res.body.count.should.equal('0');
+                done();
+            })
+        });
+        it('POST /comments/:pid to a pid that does not exist should return an error', function(done){
+            agent.post('/posts/comments/4')
+            .end(function(err, res) {
+                res.should.be.json;
+                res.body.error.code.should.equal(4001);
+                res.body.error.name.should.equal('Post does not exist');
+                done();
+            })
+        })
     })
     describe('Delete', function() {
         it('DELETE / should return OK', function(done) {

@@ -1,4 +1,12 @@
 SETUP
+1. Clone the repo into a new directory.
+2. After installing Node.JS, open the terminal and navigate to your new directory and enter the command: 'npm install --save'
+3. Download/Install Postgres and setup the required databases (shown below).
+4. To run the project, enter the command: 'npm start'
+5. Tor run the tests, enter the command: 'npm test'
+
+--------------------------------------------------------------------------------
+DATABASE SETUP
 1. Create postgres database called 4UM
 Query: "CREATE DATABASE 4UM"
 
@@ -11,7 +19,7 @@ Query: "CREATE USER postgres WITH PASSWORD 'pgpass'"
 Query: "GRANT ALL PRIVILEGES ON DATABASE 4UM to postgres"
 
 --------------------------------------------------------------------------------
-TEST-SETUP
+DATABASE TEST-SETUP
 1. Create postgres database called 4UMTEST
 Query: "CREATE DATABASE 4UMTEST"
 
@@ -24,6 +32,7 @@ Query: "CREATE DATABASE 4UMTEST"
 Query: "GRANT ALL PRIVILEGES ON DATABASE 4UMTEST to postgres"
 
 --------------------------------------------------------------------------------
+
 Functionalities:
 - User login
 - User Registration

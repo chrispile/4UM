@@ -3,7 +3,6 @@ var user4UMs = [];
 var publicList;
 var protectedList;
 var subscribedList;
-var requesteds;
 var admin = [];
 var mod4UMS;
 

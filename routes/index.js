@@ -155,7 +155,11 @@ router.get('/u/:username', requireLogin, function(req, res, next) {
                 if(err) {
                     console.log(err)
                 } else {
-                    res.render('profile', {title: req.params.username, username: res.locals.user.username, user: user, stats: result.rows[0]})
+                    var userStats = result.rows[0];
+                    if(userStats.totalscore == null) {
+                        userStats.totalscore = 0;
+                    }
+                    res.render('profile', {title: req.params.username, username: res.locals.user.username, user: user, stats: userStats})
                 }
             })
         }
